@@ -1,7 +1,7 @@
 name: Gym Scraper
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/10 * * * *'
 permissions:
   contents: write
 jobs:

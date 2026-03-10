@@ -11,6 +11,7 @@ now = datetime.now(tz)
 
 day = now.weekday()   # 0=Mon, 6=Sun
 hour = now.hour
+minute = now.minute
 
 open_now = False
 
@@ -76,14 +77,15 @@ row = [
     capacity,                          # capacity
     round(percent, 2),                 # percent_full
     day,                               # weekday (0-6)
-    hour                               # hour (0-23)
+    hour,                               # hour (0-23)
+    minute
 ]
 
 # %%
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour'])
+        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute'])
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)

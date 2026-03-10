@@ -3,7 +3,7 @@ name: RSF Gym Data Scraper
 on:
   schedule:
     # Runs every 15 minutes (0, 15, 30, 45)
-    - cron: '*/5 * * * *'
+    - cron: '0,15,30,45 * * * *'
   workflow_dispatch: # Allows you to click a button to test it manually
 
 jobs:

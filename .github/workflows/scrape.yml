@@ -1,34 +1,25 @@
-name: RSF Gym Data Scraper
-
+name: Gym Scraper
 on:
   schedule:
-    # Runs every 15 minutes (0, 15, 30, 45)
     - cron: '*/5 * * * *'
-    
+  workflow_dispatch:
+permissions:
+  contents: write
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run scraper
-        env:
+      - run: pip install -r requirements.txt
+      - env:
           DENSITY_TOKEN: ${{ secrets.DENSITY_TOKEN }}
         run: python RSF_Scraper.py
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add RSF_Dataset.csv
-          git commit -m "Update gym data: $(date)" || exit 0
+      - run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Update: $(date)" || exit 0
           git push

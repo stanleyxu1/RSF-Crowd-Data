@@ -4,6 +4,7 @@ import pytz
 import csv
 import os
 import sys
+import requests
 
 tz = pytz.timezone("America/Los_Angeles")
 now = datetime.now(tz)

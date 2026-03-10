@@ -13,21 +13,6 @@ day = now.weekday()   # 0=Mon, 6=Sun
 hour = now.hour
 minute = now.minute
 
-open_now = False
-
-if day <= 4:  # Monday–Friday
-    open_now = 7 <= hour < 23
-
-elif day == 5:  # Saturday
-    open_now = 8 <= hour < 18
-
-elif day == 6:  # Sunday
-    open_now = 8 <= hour < 23
-
-if not open_now:
-    print("RSF closed")
-    sys.exit(0)
-
 
 
 # %%

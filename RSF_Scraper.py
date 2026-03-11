@@ -51,6 +51,22 @@ print("Percent:", percent)
 print(datetime.utcnow().isoformat())
 
 # %%
+# Temperature Pulling
+temperatureURL = ("https://api.open-meteo.com/v1/forecast"
+    "?latitude=37.86866369127376"
+    "&longitude=-122.26281535768102"
+    "&current=temperature_2m,apparent_temperature,precipitation,cloud_cover,relative_humidity_2m,wind_speed_10m"
+    "&temperature_unit=fahrenheit")
+temperature = requests.get(temperatureURL).json()
+
+temp = temperature["current"]["temperature_2m"]
+feels_like = temperature["current"]["apparent_temperature"]
+precipitation = temperature["current"]["precipitation"]
+humidity = temperature["current"]["relative_humidity_2m"]
+
+print(temp, feels_like)
+
+# %%
 file_path = 'RSF_Dataset.csv'
 file_exists = os.path.isfile(file_path)
 
@@ -63,19 +79,24 @@ row = [
     round(percent, 2),                 # percent_full
     day,                               # weekday (0-6)
     hour,                               # hour (0-23)
-    minute
+    minute,
+    temp,
+    feels_like,
+    precipitation,
+    humidity
 ]
+
 
 # %%
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute'])
+        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity'])
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
 
-print(f"--- Data successfully saved to: {file_path} ---")
+print(f"--- Data saved to: {file_path} ---")
 
 # %%
 

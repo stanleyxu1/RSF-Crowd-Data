@@ -63,6 +63,3 @@ plt.legend()
 plt.savefig("crowd_graph.png")
 
 # %%
-
-
-

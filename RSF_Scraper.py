@@ -97,8 +97,3 @@ with open(file_path, mode='a', newline='') as f:
     writer.writerow(row)
 
 print(f"--- Data saved to: {file_path} ---")
-
-# %%
-
-
-

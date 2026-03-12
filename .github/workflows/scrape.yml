@@ -23,5 +23,5 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add .
-          git commit -m "Update: $(date)" || exit 0
+          git commit -m "Last Updated: $(date)" || exit 0
           git push

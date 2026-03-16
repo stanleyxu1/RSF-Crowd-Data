@@ -40,26 +40,30 @@ day_map = {
 
 
 # %%
-# Plot
-plt.figure(figsize=(10,6))
+# Create subplots (7 rows, 1 column)
+fig, axes = plt.subplots(7, 1, figsize=(10,18), sharex=True)
 
-for day in sorted(grouped["weekday"].unique()):
+for i, day in enumerate(sorted(grouped["weekday"].unique())):
     data = grouped[grouped["weekday"] == day]
 
-    # convert hour + minute into decimal time for plotting
+    # convert hour + minute into decimal time
     x = data["hour"] + data["minute"]/60
 
-    plt.plot(x, data["percent_full"], marker="o", label=day_map[day])
+    axes[i].plot(x, data["percent_full"], marker="o")
+    axes[i].set_title(day_map[day])
+    axes[i].set_ylabel("% Full")
+    axes[i].set_ylim(0,100)
+    axes[i].grid(True)
+    axes[i].tick_params(labelbottom=True)
 
-plt.xlabel("Hour of Day")
-plt.ylabel("Average % Full")
-plt.title("RSF Crowd Patterns by Time")
 
-plt.xticks(range(7,24))
-plt.grid(True)
-plt.legend()
+# Common x-axis
+axes[-1].set_xlabel("Hour of Day")
+axes[-1].set_xticks(range(7,24))
 
-# Save graph (important for GitHub Actions)
-plt.savefig("crowd_graph.png")
+plt.suptitle("RSF Crowd Patterns by Time", fontsize=16)
+plt.tight_layout(rect=[0, 0, 1, 0.97])
 
+# Save graph
+plt.savefig("crowd_graph.png", bbox_inches="tight")
 # %%

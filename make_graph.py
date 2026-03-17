@@ -1,6 +1,7 @@
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # %%
@@ -52,9 +53,9 @@ for i, day in enumerate(sorted(grouped["weekday"].unique())):
     axes[i].plot(x, data["percent_full"], marker="o")
     axes[i].set_title(day_map[day])
     axes[i].set_ylabel("% Full")
-    ymin = data["percent_full"].min() - 15
-    ymax = data["percent_full"].max() + 25
-    axes[i].set_ylim(ymin, ymax)
+    ymax = min(105, data["percent_full"].max() + 5)
+    axes[i].set_ylim(0, ymax)
+    axes[i].set_yticks(np.arange(0, 101, 10))
     axes[i].grid(True)
     axes[i].tick_params(labelbottom=True)
 

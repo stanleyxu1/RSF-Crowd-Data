@@ -41,7 +41,7 @@ day_map = {
 
 # %%
 # Create subplots (7 rows, 1 column)
-fig, axes = plt.subplots(7, 1, figsize=(10,18), sharex=True)
+fig, axes = plt.subplots(7, 1, figsize=(10, 24), sharex=True)
 
 for i, day in enumerate(sorted(grouped["weekday"].unique())):
     data = grouped[grouped["weekday"] == day]
@@ -52,7 +52,9 @@ for i, day in enumerate(sorted(grouped["weekday"].unique())):
     axes[i].plot(x, data["percent_full"], marker="o")
     axes[i].set_title(day_map[day])
     axes[i].set_ylabel("% Full")
-    axes[i].set_ylim(data["percent_full"].min()-5, data["percent_full"].max()+10)
+    ymin = data["percent_full"].min() - 15
+    ymax = data["percent_full"].max() + 25
+    axes[i].set_ylim(ymin, ymax)
     axes[i].grid(True)
     axes[i].tick_params(labelbottom=True)
 

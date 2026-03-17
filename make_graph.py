@@ -52,7 +52,7 @@ for i, day in enumerate(sorted(grouped["weekday"].unique())):
     axes[i].plot(x, data["percent_full"], marker="o")
     axes[i].set_title(day_map[day])
     axes[i].set_ylabel("% Full")
-    axes[i].set_ylim(0,100)
+    axes[i].set_ylim(data["percent_full"].min()-5, data["percent_full"].max()+10)
     axes[i].grid(True)
     axes[i].tick_params(labelbottom=True)
 

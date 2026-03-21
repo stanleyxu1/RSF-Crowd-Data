@@ -205,14 +205,6 @@ print(f"Linear Regression Predicted crowdedness in 1 hour: {LinReg_predicted_per
 
 
 # %%
-# Path to output file
-output_path = script_dir.parent / "real_time_gym_predictions.txt"
-
-# Write both predictions
-with open(output_path, "w") as f:
-    f.write(f"Random Forest prediction at {future_hour}: {predicted_percent_full[0]:.1f}%\n")
-    f.write(f"Linear Regression prediction at {future_hour}: {LinReg_predicted_percent_full[0]:.1f}%\n")
-# %%
 # Path to README
 readme_path = script_dir.parent / "README.md"
 marker = "<!-- GYM_PREDICTION -->"
@@ -223,8 +215,8 @@ with open(readme_path, "r") as f:
 # Prepare new line with both predictions
 new_line = (f"{marker}\n"
             f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
-            f"Random Forest: {predicted_percent_full[0]:.1f}%,  \n"
-            f"Linear Regression: {LinReg_predicted_percent_full[0]:.1f}%\n")
+            f"Random Forest prediction at {future_hour}:00: {predicted_percent_full[0]:.1f}%,  \n"
+            f"Linear Regression prediction at {future_hour}:00: {LinReg_predicted_percent_full[0]:.1f}%\n")
 
 # Replace existing marker line or append
 found = False

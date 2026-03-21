@@ -3,3 +3,4 @@ pytz
 pandas
 matplotlib
 numpy
+sklearn

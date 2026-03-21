@@ -223,7 +223,7 @@ with open(readme_path, "r") as f:
 # Prepare new line with both predictions
 new_line = (f"{marker}\n"
             f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
-            f"Random Forest: {predicted_percent_full[0]:.1f}%, "
+            f"Random Forest: {predicted_percent_full[0]:.1f}%,  \n"
             f"Linear Regression: {LinReg_predicted_percent_full[0]:.1f}%\n")
 
 # Replace existing marker line or append

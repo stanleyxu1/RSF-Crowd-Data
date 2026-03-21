@@ -3,3 +3,5 @@
 
 Random Forest prediction at 23:00: 23.2%  
 Linear Regression prediction at 23:00: 29.6%
+
+![Gym Crowd Graph](crowd_graph.png)

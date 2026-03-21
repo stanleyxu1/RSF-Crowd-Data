@@ -19,7 +19,7 @@ jobs:
         run: python RSF_Scraper.py
         
       - run: python make_graph.py
-      - run: python models/Gym Crowdedness Models.py
+      - run: python models/Gym_Crowdedness_Models.py
       - run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"

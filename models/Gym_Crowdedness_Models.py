@@ -5,9 +5,13 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
 
 # %%
-df = pd.read_csv("../RSF_Dataset.csv")
+script_dir = Path(__file__).parent  # models/
+csv_path = script_dir.parent / "RSF_Dataset.csv" 
+df = pd.read_csv(csv_path)
 
 # %%
 df
@@ -156,6 +160,7 @@ plt.ylabel("Importance")
 plt.show()
 
 # %%
+import datetime
 now = datetime.datetime.now()
 # Predict 1 hour ahead
 future_hour = now.hour + 1 

@@ -1,3 +1,6 @@
 ![Gym Crowd Graph](crowd_graph.png)
 
-<!-- GYM_PREDICTION --> Random Forest: 60.0%, Linear Regression: 58.7%
+<!-- GYM_PREDICTION -->
+**Gym Crowdedness Predictor (Next Hour)**
+
+Random Forest: 49.7%, Linear Regression: 49.7%

@@ -204,3 +204,41 @@ print(f"Random Forest Predicted crowdedness in 1 hour: {predicted_percent_full[0
 print(f"Linear Regression Predicted crowdedness in 1 hour: {LinReg_predicted_percent_full[0]:.1f}%")
 
 
+# %%
+# Path to output file
+output_path = script_dir.parent / "real_time_gym_predictions.txt"
+
+# Write both predictions
+with open(output_path, "w") as f:
+    f.write(f"Random Forest prediction at {future_hour}: {predicted_percent_full[0]:.1f}%\n")
+    f.write(f"Linear Regression prediction at {future_hour}: {LinReg_predicted_percent_full[0]:.1f}%\n")
+# %%
+# Path to README
+readme_path = script_dir.parent / "README.md"
+marker = "<!-- GYM_PREDICTION -->"
+
+with open(readme_path, "r") as f:
+    lines = f.readlines()
+
+# Prepare new line with both predictions
+new_line = (f"{marker}\n"
+            f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
+            f"Random Forest: {predicted_percent_full[0]:.1f}%, "
+            f"Linear Regression: {LinReg_predicted_percent_full[0]:.1f}%\n")
+
+# Replace existing marker line or append
+found = False
+for i, line in enumerate(lines):
+    if marker in line:
+        lines[i] = new_line
+        found = True
+        break
+
+if not found:
+    lines.append("\n" + new_line)
+
+with open(readme_path, "w") as f:
+    f.writelines(lines)
+
+print("README updated with both model predictions.")
+# %%

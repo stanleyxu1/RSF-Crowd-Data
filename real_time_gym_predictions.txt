@@ -1,2 +1,2 @@
-Random Forest prediction: 60.0%
-Linear Regression prediction: 58.7%
+Random Forest prediction at 21: 49.7%
+Linear Regression prediction at 21: 49.7%

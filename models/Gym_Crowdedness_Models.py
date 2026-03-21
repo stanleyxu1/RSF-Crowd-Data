@@ -203,7 +203,4 @@ LinReg_predicted_percent_full = LinReg.predict(X_future)
 print(f"Random Forest Predicted crowdedness in 1 hour: {predicted_percent_full[0]:.1f}%")
 print(f"Linear Regression Predicted crowdedness in 1 hour: {LinReg_predicted_percent_full[0]:.1f}%")
 
-# %%
-
-
 

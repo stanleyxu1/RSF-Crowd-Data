@@ -200,10 +200,6 @@ X_future = pd.DataFrame([[
 predicted_percent_full = model.predict(X_future)
 LinReg_predicted_percent_full = LinReg.predict(X_future)
 
-print(f"Random Forest Predicted crowdedness in 1 hour: {predicted_percent_full[0]:.1f}%")
-print(f"Linear Regression Predicted crowdedness in 1 hour: {LinReg_predicted_percent_full[0]:.1f}%")
-
-
 # %%
 # Path to README
 readme_path = script_dir.parent / "README.md"
@@ -218,19 +214,19 @@ new_line = (f"{marker}\n"
             f"Random Forest prediction at {future_hour}:00: {predicted_percent_full[0]:.1f}%,  \n"
             f"Linear Regression prediction at {future_hour}:00: {LinReg_predicted_percent_full[0]:.1f}%\n")
 
-# Replace existing marker line or append
+# Replace existing marker block or append
 found = False
 for i, line in enumerate(lines):
     if marker in line:
-        lines[i] = new_line
+        j = i + 1
+        while j < len(lines) and not lines[j].startswith("<!--"):
+            j += 1
+        # Preserve any image lines from the old block
+        image_lines = [l for l in lines[i:j] if l.strip().startswith("![")]
+        lines[i:j] = [new_line] + image_lines
         found = True
         break
 
 if not found:
     lines.append("\n" + new_line)
-
-with open(readme_path, "w") as f:
-    f.writelines(lines)
-
-print("README updated with both model predictions.")
 # %%

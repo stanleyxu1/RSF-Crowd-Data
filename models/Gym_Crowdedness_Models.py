@@ -184,52 +184,51 @@ week_of_year = future_datetime.isocalendar()[1]
 
 # last known occupancy
 last_percent_full = df['percent_full'].iloc[-1]
+# Determine if gym will be open at the predicted hour
+open_hour = 8 if future_datetime.weekday() in [5, 6] else 7
+close_hour_future = 18 if future_datetime.weekday() == 5 else 23  # Saturday closes at 18
 
-#Future data
-X_future = pd.DataFrame([[
-    hour_sin,
-    hour_cos,
-    weekday,
-    week_of_year,
-    minutes_until_close,
-    last_percent_full
-]], columns=features)
+if future_hour < open_hour or future_hour >= close_hour_future:
+    print(f"Gym is closed at {future_hour}:00. No prediction made.")
+else:
+    # Everything from X_future creation onwards
+    X_future = pd.DataFrame([[
+        hour_sin,
+        hour_cos,
+        weekday,
+        week_of_year,
+        minutes_until_close,
+        last_percent_full
+    ]], columns=features)
 
+    predicted_percent_full = model.predict(X_future)
+    LinReg_predicted_percent_full = LinReg.predict(X_future)
+
+    readme_path = script_dir.parent / "README.md"
+    marker = "<!-- GYM_PREDICTION -->"
+
+    with open(readme_path, "r") as f:
+        lines = f.readlines()
+
+    new_line = (f"{marker}\n"
+                f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
+                f"Random Forest prediction at {future_hour}:00: {predicted_percent_full[0]:.1f}%,  \n"
+                f"Linear Regression prediction at {future_hour}:00: {LinReg_predicted_percent_full[0]:.1f}%\n")
+
+    found = False
+    for i, line in enumerate(lines):
+        if marker in line:
+            j = i + 1
+            while j < len(lines) and not lines[j].startswith("<!--"):
+                j += 1
+            image_lines = [l for l in lines[i:j] if l.strip().startswith("![")]
+            lines[i:j] = [new_line] + image_lines
+            found = True
+            break
+
+    if not found:
+        lines.append("\n" + new_line)
+
+    with open(readme_path, "w") as f:
+        f.writelines(lines)
 # %%
-# model = your trained RandomForestRegressor
-predicted_percent_full = model.predict(X_future)
-LinReg_predicted_percent_full = LinReg.predict(X_future)
-
-# %%
-# Path to README
-readme_path = script_dir.parent / "README.md"
-marker = "<!-- GYM_PREDICTION -->"
-
-with open(readme_path, "r") as f:
-    lines = f.readlines()
-
-# Prepare new line with both predictions
-new_line = (f"{marker}\n"
-            f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
-            f"Random Forest prediction at {future_hour}:00: {predicted_percent_full[0]:.1f}%,  \n"
-            f"Linear Regression prediction at {future_hour}:00: {LinReg_predicted_percent_full[0]:.1f}%\n")
-
-# Replace existing marker block or append
-found = False
-for i, line in enumerate(lines):
-    if marker in line:
-        j = i + 1
-        while j < len(lines) and not lines[j].startswith("<!--"):
-            j += 1
-        # Preserve any image lines from the old block
-        image_lines = [l for l in lines[i:j] if l.strip().startswith("![")]
-        lines[i:j] = [new_line] + image_lines
-        found = True
-        break
-
-if not found:
-    lines.append("\n" + new_line)
-
-# %%
-with open(readme_path, "w") as f:
-    f.writelines(lines)

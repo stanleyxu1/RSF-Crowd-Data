@@ -1,6 +1,6 @@
 <!-- GYM_PREDICTION -->
 **Gym Crowdedness Predictor (Next Hour)**
 
-Random Forest prediction at 15:00: 68.8%,  
-Linear Regression prediction at 15:00: 48.7%
+Random Forest prediction at 16:00: 25.2%,  
+Linear Regression prediction at 16:00: 32.6%
 ![Gym Crowd Graph](crowd_graph.png)

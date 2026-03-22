@@ -52,6 +52,7 @@ print(datetime.utcnow().isoformat())
 
 # %%
 # Temperature Pulling
+forecast_days = 2 if hour == 23 else 1
 temperatureURL = (
     "https://api.open-meteo.com/v1/forecast"
     "?latitude=37.86866369127376"
@@ -60,7 +61,7 @@ temperatureURL = (
     "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
     "&temperature_unit=fahrenheit"
     "&timezone=America/Los_Angeles"
-    "&forecast_days=1"
+    "&forecast_days={forecast_days}"
 )
 temperature = requests.get(temperatureURL).json()
 

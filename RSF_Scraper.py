@@ -1,5 +1,5 @@
 # %%
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import csv
 import os
@@ -52,11 +52,16 @@ print(datetime.utcnow().isoformat())
 
 # %%
 # Temperature Pulling
-temperatureURL = ("https://api.open-meteo.com/v1/forecast"
+temperatureURL = (
+    "https://api.open-meteo.com/v1/forecast"
     "?latitude=37.86866369127376"
     "&longitude=-122.26281535768102"
-    "&current=temperature_2m,apparent_temperature,precipitation,cloud_cover,relative_humidity_2m,wind_speed_10m"
-    "&temperature_unit=fahrenheit")
+    "&current=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
+    "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
+    "&temperature_unit=fahrenheit"
+    "&timezone=America/Los_Angeles"
+    "&forecast_days=1"
+)
 temperature = requests.get(temperatureURL).json()
 
 temp = temperature["current"]["temperature_2m"]
@@ -64,8 +69,16 @@ feels_like = temperature["current"]["apparent_temperature"]
 precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
-print(temp, feels_like)
+#%%
+# Next hour forecast
+next_hour = (now + timedelta(hours=1)).strftime("%Y-%m-%dT%H:00")
+times = temperature["hourly"]["time"]
+idx = times.index(next_hour)
 
+temp_forecast        = temperature["hourly"]["temperature_2m"][idx]
+feels_like_forecast  = temperature["hourly"]["apparent_temperature"][idx]
+precipitation_forecast = temperature["hourly"]["precipitation"][idx]
+humidity_forecast    = temperature["hourly"]["relative_humidity_2m"][idx]
 # %%
 file_path = 'RSF_Dataset.csv'
 file_exists = os.path.isfile(file_path)
@@ -83,7 +96,11 @@ row = [
     temp,
     feels_like,
     precipitation,
-    humidity
+    humidity,
+    temp_forecast,
+    feels_like_forecast,
+    precipitation_forecast,
+    humidity_forecast,
 ]
 
 
@@ -91,9 +108,11 @@ row = [
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity'])
+        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity', 'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast'])
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
 
 print(f"--- Data saved to: {file_path} ---")
+
+# %%

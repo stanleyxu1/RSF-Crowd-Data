@@ -229,4 +229,7 @@ for i, line in enumerate(lines):
 
 if not found:
     lines.append("\n" + new_line)
+
 # %%
+with open(readme_path, "w") as f:
+    f.writelines(lines)

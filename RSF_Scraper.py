@@ -61,7 +61,7 @@ temperatureURL = (
     "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
     "&temperature_unit=fahrenheit"
     "&timezone=America/Los_Angeles"
-    "&forecast_days={forecast_days}"
+    f"&forecast_days={forecast_days}"
 )
 temperature = requests.get(temperatureURL).json()
 

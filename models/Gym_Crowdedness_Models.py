@@ -80,8 +80,7 @@ X = df.iloc[1:][features]
 y = df[1:]["percent_full"]
 
 # %%
-X_train, X_test, y_train, y_test = train_test_split(
-X, y, train_size=0.8, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
 
 # %%
@@ -99,12 +98,9 @@ LinReg.fit(X_train, y_train)
 # %%
 predictions = LinReg.predict(X_test)
 mae_test = mean_absolute_error(y_test, predictions)
-rmse_test = np.sqrt(mean_squared_error(y_test, predictions))
-
-
-# %%
+mse_test = np.sqrt(mean_squared_error(y_test, predictions))
 print("Mean Absolute Error (Testing Data):", mae_test)
-print("RMSE (Testing Data):", rmse_test)
+print("RMSE (Testing Data):", np.sqrt(mse_test))
 
 
 # %%
@@ -127,7 +123,7 @@ plt.show()
 from sklearn.ensemble import RandomForestRegressor
 
 model = RandomForestRegressor(
-    n_estimators=300,
+    n_estimators=100,
     max_depth=12,
     random_state=42
 )
@@ -139,8 +135,8 @@ predictions = model.predict(X_test)
 mae = mean_absolute_error(y_test, predictions)
 rmse = np.sqrt(mean_squared_error(y_test, predictions))
 
-print("Mean Absolute Error:", mae)
-print("RMSE:", rmse)
+print("Mean Absolute Error (Random Forest):", mae)
+print("RMSE (Random Forest):", rmse)
 
 # %%
 importance = model.feature_importances_
@@ -151,7 +147,6 @@ feature_importance = pd.DataFrame({
 }).sort_values(by="importance", ascending=False)
 
 print(feature_importance)
-import matplotlib.pyplot as plt
 
 feature_importance.plot(
     x="feature",
@@ -235,4 +230,5 @@ else:
 
     with open(readme_path, "w") as f:
         f.writelines(lines)
+
 # %%

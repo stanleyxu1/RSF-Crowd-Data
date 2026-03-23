@@ -70,8 +70,10 @@ features = [
     "weekday",
     "week_of_year",
     "minutes_until_close",
-    "last_percent_full"
+    "last_percent_full",
+    "weekday_hour"
 ]
+
 
 # %%
 X = df.iloc[1:][features]
@@ -163,34 +165,30 @@ plt.ylabel("Importance")
 plt.show()
 
 # %%
-import datetime
-now = datetime.datetime.now()
-# Predict 1 hour ahead
-future_hour = now.hour + 1 
+import datetime, pytz
+
+# Use your local timezone instead of UTC
+tz = pytz.timezone("America/Los_Angeles")
+now = datetime.datetime.now(tz)
+future_datetime = now + datetime.timedelta(hours=1)
+
+future_hour = future_datetime.hour  # safer than now.hour + 1 (avoids 24)
+weekday = future_datetime.weekday() # derive from actual current time, not df
 
 # Hour encoding (cyclical)
 hour_rad = 2 * np.pi * future_hour / 24
 hour_sin = np.sin(hour_rad)
 hour_cos = np.cos(hour_rad)
 
-# Weekday (0=Monday, 4=Friday)
-weekday = df['weekday'].iloc[-1]
-
 # Minutes until close
-close_hour = df['close_hour'].iloc[-1] 
-minutes_until_close = (close_hour - future_hour) * 60 - now.minute
+open_hour = 8 if weekday in [5, 6] else 7
+close_hour_future = 18 if weekday == 5 else 23
 
-# week_of_year
-import datetime
-future_datetime = datetime.datetime.now() + datetime.timedelta(hours=1)
+minutes_until_close = (close_hour_future - future_hour) * 60 - future_datetime.minute
 week_of_year = future_datetime.isocalendar()[1]
-
-# last known occupancy
+weekday_hour = weekday * 24 + future_hour
 last_percent_full = df['percent_full'].iloc[-1]
-# Determine if gym will be open at the predicted hour
-open_hour = 8 if future_datetime.weekday() in [5, 6] else 7
-close_hour_future = 18 if future_datetime.weekday() == 5 else 23  # Saturday closes at 18
-
+print(f"Local time: {now}, future_hour: {future_hour}, weekday: {weekday}")
 if future_hour < open_hour or future_hour >= close_hour_future:
     print(f"Gym is closed at {future_hour}:00. No prediction made.")
 else:
@@ -201,7 +199,8 @@ else:
         weekday,
         week_of_year,
         minutes_until_close,
-        last_percent_full
+        last_percent_full,
+        weekday_hour
     ]], columns=features)
 
     predicted_percent_full = model.predict(X_future)

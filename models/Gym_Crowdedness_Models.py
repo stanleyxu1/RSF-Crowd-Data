@@ -55,10 +55,13 @@ df["minutes_until_close"] = (
     - df["minute"]
 )
 
+df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
+
 # %%
 corr_target = df.corr(numeric_only=True)["percent_full"].sort_values(ascending=False)
 
 print(corr_target)
+
 
 # %%
 features = [
@@ -210,10 +213,12 @@ else:
     with open(readme_path, "r") as f:
         lines = f.readlines()
 
+    future_date_str = future_datetime.strftime("%B %d, %Y")
+
     new_line = (f"{marker}\n"
-                f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
-                f"Random Forest prediction at {future_hour}:00: {predicted_percent_full[0]:.1f}%,  \n"
-                f"Linear Regression prediction at {future_hour}:00: {LinReg_predicted_percent_full[0]:.1f}%\n")
+            f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
+            f"Random Forest prediction at {future_hour}:00 on {future_date_str}: {predicted_percent_full[0]:.1f}%,  \n"
+            f"Linear Regression prediction at {future_hour}:00 on {future_date_str}: {LinReg_predicted_percent_full[0]:.1f}%\n")
 
     found = False
     for i, line in enumerate(lines):

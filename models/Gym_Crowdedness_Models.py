@@ -230,5 +230,3 @@ else:
 
     with open(readme_path, "w") as f:
         f.writelines(lines)
-
-# %%

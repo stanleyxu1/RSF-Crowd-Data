@@ -31,9 +31,6 @@ headers = {
 
 r = requests.get(url, headers=headers)
 
-print(r.status_code)
-print(r.text[:500])
-
 # %%
 data = r.json()
 
@@ -43,16 +40,9 @@ count = space.get("current_count", 0)
 capacity = space.get("capacity", 1)
 percent = (count / capacity) * 100
 
-print("Time:", datetime.now())
-print("People:", count)
-print("Capacity:", capacity)
-print("Percent:", percent)
-
-print(datetime.utcnow().isoformat())
-
 # %%
 # Temperature Pulling
-forecast_days = 2 if hour == 23 else 1
+forecast_days = 2 if hour >= 23 else 1
 temperatureURL = (
     "https://api.open-meteo.com/v1/forecast"
     "?latitude=37.86866369127376"
@@ -71,15 +61,31 @@ precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
 #%%
+times = temperature["hourly"]["time"]
+ 
 # Next hour forecast
 next_hour = (now + timedelta(hours=1)).strftime("%Y-%m-%dT%H:00")
-times = temperature["hourly"]["time"]
 idx = times.index(next_hour)
-
 temp_forecast        = temperature["hourly"]["temperature_2m"][idx]
 feels_like_forecast  = temperature["hourly"]["apparent_temperature"][idx]
 precipitation_forecast = temperature["hourly"]["precipitation"][idx]
 humidity_forecast    = temperature["hourly"]["relative_humidity_2m"][idx]
+ 
+# 2 hour forecast
+next_2hour = (now + timedelta(hours=2)).strftime("%Y-%m-%dT%H:00")
+idx2 = times.index(next_2hour)
+temp_forecast_2h        = temperature["hourly"]["temperature_2m"][idx2]
+feels_like_forecast_2h  = temperature["hourly"]["apparent_temperature"][idx2]
+precipitation_forecast_2h = temperature["hourly"]["precipitation"][idx2]
+humidity_forecast_2h    = temperature["hourly"]["relative_humidity_2m"][idx2]
+ 
+# 3 hour forecast
+next_3hour = (now + timedelta(hours=3)).strftime("%Y-%m-%dT%H:00")
+idx3 = times.index(next_3hour)
+temp_forecast_3h        = temperature["hourly"]["temperature_2m"][idx3]
+feels_like_forecast_3h  = temperature["hourly"]["apparent_temperature"][idx3]
+precipitation_forecast_3h = temperature["hourly"]["precipitation"][idx3]
+humidity_forecast_3h    = temperature["hourly"]["relative_humidity_2m"][idx3]
 # %%
 file_path = 'RSF_Dataset.csv'
 file_exists = os.path.isfile(file_path)
@@ -102,6 +108,14 @@ row = [
     feels_like_forecast,
     precipitation_forecast,
     humidity_forecast,
+    temp_forecast_2h,
+    feels_like_forecast_2h,
+    precipitation_forecast_2h,
+    humidity_forecast_2h,
+    temp_forecast_3h,
+    feels_like_forecast_3h,
+    precipitation_forecast_3h,
+    humidity_forecast_3h,
 ]
 
 
@@ -109,11 +123,8 @@ row = [
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity', 'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast'])
+        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity', 'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast', 'temperature_forecast_2h', 'feels_like_forecast_2h', 'precipitation_forecast_2h', 'humidity_forecast_2h', 'temperature_forecast_3h', 'feels_like_forecast_3h', 'precipitation_forecast_3h', 'humidity_forecast_3h'])
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
 
-print(f"--- Data saved to: {file_path} ---")
-
-# %%

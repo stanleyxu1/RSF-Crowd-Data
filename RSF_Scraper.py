@@ -41,17 +41,15 @@ capacity = space.get("capacity", 1)
 percent = (count / capacity) * 100
 
 # %%
-# Temperature Pulling
-forecast_days = 2 if hour >= 23 else 1
+# Pull CURRENT temperature
 temperatureURL = (
     "https://api.open-meteo.com/v1/forecast"
     "?latitude=37.86866369127376"
     "&longitude=-122.26281535768102"
     "&current=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
-    "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
     "&temperature_unit=fahrenheit"
     "&timezone=America/Los_Angeles"
-    f"&forecast_days={forecast_days}"
+    "&forecast_days=1"
 )
 temperature = requests.get(temperatureURL).json()
 
@@ -61,31 +59,35 @@ precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
 #%%
-times = temperature["hourly"]["time"]
+#Get what was forecasted for NOW from (1, 2, 3) hours ago
+current_hour_str = now.strftime("%Y-%m-%dT%H:00")
  
-# Next hour forecast
-next_hour = (now + timedelta(hours=1)).strftime("%Y-%m-%dT%H:00")
-idx = times.index(next_hour)
-temp_forecast        = temperature["hourly"]["temperature_2m"][idx]
-feels_like_forecast  = temperature["hourly"]["apparent_temperature"][idx]
-precipitation_forecast = temperature["hourly"]["precipitation"][idx]
-humidity_forecast    = temperature["hourly"]["relative_humidity_2m"][idx]
+def get_past_forecast(offset):
+    origin = now - timedelta(hours=offset)
+    date_str = origin.strftime("%Y-%m-%d")
+    url = (
+        "https://historical-forecast-api.open-meteo.com/v1/forecast"
+        "?latitude=37.86866369127376"
+        "&longitude=-122.26281535768102"
+        "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
+        "&temperature_unit=fahrenheit"
+        "&timezone=America/Los_Angeles"
+        f"&start_date={date_str}&end_date={date_str}"
+    )
+    data = requests.get(url).json()
+    times = data["hourly"]["time"]
+    idx = times.index(current_hour_str)
+    return {
+        "temperature":   data["hourly"]["temperature_2m"][idx],
+        "feels_like":    data["hourly"]["apparent_temperature"][idx],
+        "precipitation": data["hourly"]["precipitation"][idx],
+        "humidity":      data["hourly"]["relative_humidity_2m"][idx],
+    }
  
-# 2 hour forecast
-next_2hour = (now + timedelta(hours=2)).strftime("%Y-%m-%dT%H:00")
-idx2 = times.index(next_2hour)
-temp_forecast_2h        = temperature["hourly"]["temperature_2m"][idx2]
-feels_like_forecast_2h  = temperature["hourly"]["apparent_temperature"][idx2]
-precipitation_forecast_2h = temperature["hourly"]["precipitation"][idx2]
-humidity_forecast_2h    = temperature["hourly"]["relative_humidity_2m"][idx2]
+f1 = get_past_forecast(1)
+f2 = get_past_forecast(2)
+f3 = get_past_forecast(3)
  
-# 3 hour forecast
-next_3hour = (now + timedelta(hours=3)).strftime("%Y-%m-%dT%H:00")
-idx3 = times.index(next_3hour)
-temp_forecast_3h        = temperature["hourly"]["temperature_2m"][idx3]
-feels_like_forecast_3h  = temperature["hourly"]["apparent_temperature"][idx3]
-precipitation_forecast_3h = temperature["hourly"]["precipitation"][idx3]
-humidity_forecast_3h    = temperature["hourly"]["relative_humidity_2m"][idx3]
 # %%
 file_path = 'RSF_Dataset.csv'
 file_exists = os.path.isfile(file_path)
@@ -104,18 +106,18 @@ row = [
     feels_like,
     precipitation,
     humidity,
-    temp_forecast,
-    feels_like_forecast,
-    precipitation_forecast,
-    humidity_forecast,
-    temp_forecast_2h,
-    feels_like_forecast_2h,
-    precipitation_forecast_2h,
-    humidity_forecast_2h,
-    temp_forecast_3h,
-    feels_like_forecast_3h,
-    precipitation_forecast_3h,
-    humidity_forecast_3h,
+    f1["temperature"],
+    f1["feels_like"],
+    f1["precipitation"],
+    f1["humidity"],
+    f2["temperature"],
+    f2["feels_like"],
+    f2["precipitation"],
+    f2["humidity"],
+    f3["temperature"],
+    f3["feels_like"],
+    f3["precipitation"],
+    f3["humidity"],
 ]
 
 

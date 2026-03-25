@@ -59,34 +59,29 @@ precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
 #%%
-#Get what was forecasted for NOW from (1, 2, 3) hours ago
+#Get what was forecasted for NOW from (1) hours ago
 current_hour_str = now.strftime("%Y-%m-%dT%H:00")
+origin = now - timedelta(hours=1)
+date_str = origin.strftime("%Y-%m-%d")
  
-def get_past_forecast(offset):
-    origin = now - timedelta(hours=offset)
-    date_str = origin.strftime("%Y-%m-%d")
-    url = (
-        "https://historical-forecast-api.open-meteo.com/v1/forecast"
-        "?latitude=37.86866369127376"
-        "&longitude=-122.26281535768102"
-        "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
-        "&temperature_unit=fahrenheit"
-        "&timezone=America/Los_Angeles"
-        f"&start_date={date_str}&end_date={date_str}"
-    )
-    data = requests.get(url).json()
-    times = data["hourly"]["time"]
-    idx = times.index(current_hour_str)
-    return {
-        "temperature":   data["hourly"]["temperature_2m"][idx],
-        "feels_like":    data["hourly"]["apparent_temperature"][idx],
-        "precipitation": data["hourly"]["precipitation"][idx],
-        "humidity":      data["hourly"]["relative_humidity_2m"][idx],
-    }
+forecastURL = (
+    "https://historical-forecast-api.open-meteo.com/v1/forecast"
+    "?latitude=37.86866369127376"
+    "&longitude=-122.26281535768102"
+    "&hourly=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
+    "&temperature_unit=fahrenheit"
+    "&timezone=America/Los_Angeles"
+    f"&start_date={date_str}&end_date={date_str}"
+)
+forecast = requests.get(forecastURL).json()
+times = forecast["hourly"]["time"]
+idx = times.index(current_hour_str)
  
-f1 = get_past_forecast(1)
-f2 = get_past_forecast(2)
-f3 = get_past_forecast(3)
+temp_forecast          = forecast["hourly"]["temperature_2m"][idx]
+feels_like_forecast    = forecast["hourly"]["apparent_temperature"][idx]
+precipitation_forecast = forecast["hourly"]["precipitation"][idx]
+humidity_forecast      = forecast["hourly"]["relative_humidity_2m"][idx]
+
  
 # %%
 file_path = 'RSF_Dataset.csv'
@@ -106,18 +101,10 @@ row = [
     feels_like,
     precipitation,
     humidity,
-    f1["temperature"],
-    f1["feels_like"],
-    f1["precipitation"],
-    f1["humidity"],
-    f2["temperature"],
-    f2["feels_like"],
-    f2["precipitation"],
-    f2["humidity"],
-    f3["temperature"],
-    f3["feels_like"],
-    f3["precipitation"],
-    f3["humidity"],
+    temp_forecast,
+    feels_like_forecast,
+    precipitation_forecast,
+    humidity_forecast,
 ]
 
 
@@ -125,7 +112,9 @@ row = [
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
     if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute', 'temp', 'feels_like', 'precipitation', 'humidity', 'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast', 'temperature_forecast_2h', 'feels_like_forecast_2h', 'precipitation_forecast_2h', 'humidity_forecast_2h', 'temperature_forecast_3h', 'feels_like_forecast_3h', 'precipitation_forecast_3h', 'humidity_forecast_3h'])
+        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute',
+                         'temperature', 'feels_like', 'precipitation', 'humidity',
+                         'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast'])
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)

@@ -129,3 +129,4 @@ with open(file_path, mode='a', newline='') as f:
     
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
+

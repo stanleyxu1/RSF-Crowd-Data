@@ -1,6 +1,6 @@
 <!-- GYM_PREDICTION -->
 **Gym Crowdedness Predictor (Next Hour)**
 
-Random Forest prediction at 21:00 on March 27, 2026: 4.1%,  
-Linear Regression prediction at 21:00 on March 27, 2026: 0.4%
+Random Forest prediction at 8:00 on March 28, 2026: 19.2%,  
+Linear Regression prediction at 8:00 on March 28, 2026: 3.8%
 ![Gym Crowd Graph](crowd_graph.png)

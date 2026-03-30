@@ -129,7 +129,7 @@ predictions = LinReg.predict(X_test)
 mae_test_lr = mean_absolute_error(y_test, predictions)
 mse_test_lr = np.sqrt(mean_squared_error(y_test, predictions))
 print("Mean Absolute Error (Testing Data):", mae_test_lr)
-print("RMSE (Testing Data):", np.sqrt(mse_test_lr))
+print("RMSE (Testing Data):", mse_test_lr)
 
 
 # %%
@@ -171,8 +171,8 @@ predictions = model.predict(X_test)
 mae_test_rf = mean_absolute_error(y_test, predictions)
 rmse_test_rf = np.sqrt(mean_squared_error(y_test, predictions))
 
-print("Mean Absolute Error (Random Forest):", mae_test_rf)
-print("RMSE (Random Forest):", rmse_test_rf)
+print("Mean Absolute Error (Random Forest Testing Data):", mae_test_rf)
+print("RMSE (Random Forest Testing Data):", rmse_test_rf)
 
 # %%
 #Find which features most important to model

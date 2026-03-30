@@ -224,8 +224,9 @@ else:
         weekday_hour
     ]], columns=features)
 
-    predicted_percent_full = model.predict(X_future)
-    LinReg_predicted_percent_full = LinReg.predict(X_future)
+    # Take predicted values in 1 hour (clips predictions to be ONLY 0 to 100 percent)
+    predicted_percent_full = np.clip(model.predict(X_future), 0, 100)
+    LinReg_predicted_percent_full = np.clip(LinReg.predict(X_future), 0, 100)
 
     readme_path = script_dir.parent / "README.md"
     marker = "<!-- GYM_PREDICTION -->"

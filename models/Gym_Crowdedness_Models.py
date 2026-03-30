@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
+from xgboost import XGBRegressor
 
 # %%
 script_dir = Path(__file__).parent  # models/
@@ -110,7 +111,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 
 # %%
-#Naive baseline, all predictions are overall average
+#Naive baseline, all predictions are simply overall average
 mean_value = y_train.mean()
 baseline_preds = [mean_value] * len(y_test)
 
@@ -118,18 +119,21 @@ from sklearn.metrics import mean_absolute_error
 print(mean_absolute_error(y_test, baseline_preds))
 
 # %%
+#Fit Linear Regression Model
 LinReg = LinearRegression()
 LinReg.fit(X_train, y_train)
 
 # %%
+#Predict TEST data with LinReg Model and get Error Metrics
 predictions = LinReg.predict(X_test)
-mae_test = mean_absolute_error(y_test, predictions)
-mse_test = np.sqrt(mean_squared_error(y_test, predictions))
-print("Mean Absolute Error (Testing Data):", mae_test)
-print("RMSE (Testing Data):", np.sqrt(mse_test))
+mae_test_lr = mean_absolute_error(y_test, predictions)
+mse_test_lr = np.sqrt(mean_squared_error(y_test, predictions))
+print("Mean Absolute Error (Testing Data):", mae_test_lr)
+print("RMSE (Testing Data):", np.sqrt(mse_test_lr))
 
 
 # %%
+#Predict TRAIN data with LinReg Model and get Error Metrics
 predictions_training = LinReg.predict(X_train)
 mae_train = mean_absolute_error(y_train, predictions_training)
 rmse_train = np.sqrt(mean_squared_error(y_train, predictions_training))
@@ -139,13 +143,16 @@ print("RMSE (Training Data):", rmse_train)
 
 
 # %%
+#Predicted v Actual Graph on Linear Regression
 plt.scatter(predictions, y_test)
 plt.xlabel("Predicted % Full")
 plt.ylabel("Actual % Full")
 plt.title("Predicted vs Actual Gym Occupancy")
+plt.title("Predicted v Actual (Linear Regression)")
 plt.show()
 
 # %%
+#Fit Random Forest Regressor Model
 from sklearn.ensemble import RandomForestRegressor
 
 model = RandomForestRegressor(
@@ -155,16 +162,20 @@ model = RandomForestRegressor(
 )
 
 model.fit(X_train, y_train)
+
+#%%
+#Predict TEST data with Random Forest Model and get Error Metrics
 predictions = model.predict(X_test)
 
 # evaluation
-mae = mean_absolute_error(y_test, predictions)
-rmse = np.sqrt(mean_squared_error(y_test, predictions))
+mae_test_rf = mean_absolute_error(y_test, predictions)
+rmse_test_rf = np.sqrt(mean_squared_error(y_test, predictions))
 
-print("Mean Absolute Error (Random Forest):", mae)
-print("RMSE (Random Forest):", rmse)
+print("Mean Absolute Error (Random Forest):", mae_test_rf)
+print("RMSE (Random Forest):", rmse_test_rf)
 
 # %%
+#Find which features most important to model
 importance = model.feature_importances_
 
 feature_importance = pd.DataFrame({
@@ -185,6 +196,27 @@ plt.title("Feature Importance")
 plt.ylabel("Importance")
 plt.show()
 
+#%%
+xgb_model = XGBRegressor(
+    n_estimators=200,
+    max_depth=6,
+    learning_rate=0.05,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42,
+    n_jobs=-1
+)
+
+xgb_model.fit(X_train, y_train)
+xgb_predictions = xgb_model.predict(X_test)
+
+# Evaluation
+mae_test_xgb = mean_absolute_error(y_test, xgb_predictions)
+mse_test_xgb = np.sqrt(mean_squared_error(y_test, xgb_predictions))
+
+print("Mean Absolute Error (XGBoost):", mae_test_xgb)
+print("RMSE (XGBoost):", mse_test_xgb)
+
 # %%
 import datetime, pytz
 
@@ -193,8 +225,8 @@ tz = pytz.timezone("America/Los_Angeles")
 now = datetime.datetime.now(tz)
 future_datetime = now + datetime.timedelta(hours=1)
 
-future_hour = future_datetime.hour  # safer than now.hour + 1 (avoids 24)
-weekday = future_datetime.weekday() # derive from actual current time, not df
+future_hour = future_datetime.hour  
+weekday = future_datetime.weekday() 
 
 # Hour encoding (cyclical)
 hour_rad = 2 * np.pi * future_hour / 24
@@ -227,6 +259,7 @@ else:
     # Take predicted values in 1 hour (clips predictions to be ONLY 0 to 100 percent)
     predicted_percent_full = np.clip(model.predict(X_future), 0, 100)
     LinReg_predicted_percent_full = np.clip(LinReg.predict(X_future), 0, 100)
+    XGB_predicted_percent_full = np.clip(xgb_model.predict(X_future), 0, 100)
 
     readme_path = script_dir.parent / "README.md"
     marker = "<!-- GYM_PREDICTION -->"
@@ -238,6 +271,7 @@ else:
 
     new_line = (f"{marker}\n"
             f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
+            f"XGBoost prediction at {future_hour}:00 on {future_date_str}: {XGB_predicted_percent_full[0]:.1f}%,  \n"
             f"Random Forest prediction at {future_hour}:00 on {future_date_str}: {predicted_percent_full[0]:.1f}%,  \n"
             f"Linear Regression prediction at {future_hour}:00 on {future_date_str}: {LinReg_predicted_percent_full[0]:.1f}%\n")
 
@@ -258,3 +292,5 @@ else:
     with open(readme_path, "w") as f:
         f.writelines(lines)
 
+
+# %%

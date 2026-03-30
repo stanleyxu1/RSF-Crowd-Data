@@ -15,8 +15,8 @@ df = pd.read_csv(csv_path)
 
 # %%
 df
-
 # %%
+df["timestamp"] = pd.to_datetime(df["timestamp"])
 df["open_hour"] = 7
 df["close_hour"] = 23
 
@@ -26,27 +26,52 @@ df.loc[df["weekday"].isin([5,6]), "open_hour"] = 8
 # Saturday closing time
 df.loc[df["weekday"] == 5, "close_hour"] = 18
 
+#SPRING BREAK HOURS
+spring_break = {
+    "2026-03-23": (8, 20),
+    "2026-03-24": (8, 20),
+    "2026-03-25": (8, 20),
+    "2026-03-26": (8, 20),
+    "2026-03-27": (8, 20),
+    "2026-03-28": (8, 18),
+    "2026-03-29": (8, 20)
+}
+
+# Apply spring break overrides
+df["date_str"] = df["timestamp"].dt.strftime("%Y-%m-%d")
+
+for date, (open_h, close_h) in spring_break.items():
+    mask = df["date_str"] == date
+    df.loc[mask, "open_hour"] = open_h
+    df.loc[mask, "close_hour"] = close_h
+
+
 df["is_open"] = (
     (df["hour"] >= df["open_hour"]) &
     (df["hour"] < df["close_hour"])
 ).astype(int)
 
+
+#%%
+#Last Percent Full (ML Feature)
 df["last_percent_full"] = df["percent_full"].shift(1)
 
 
-
 # %%
-#Data cleaning with time-series values
-df["timestamp"] = pd.to_datetime(df["timestamp"])
+#Turning Dates to Timeseries type
 df = df.sort_values("timestamp")
 df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 df["week_of_year"] = df["timestamp"].dt.isocalendar().week.astype(int)
 
+#Is weekend
 df["is_weekend"] = df["weekday"].isin([5,6]).astype(int)
+
+#Use sin and cos for hours (time is circular)
 df["hour_sin"] = np.sin(2 * np.pi * df["hour"] / 24)
 df["hour_cos"] = np.cos(2 * np.pi * df["hour"] / 24)
 
+#Only take open values
 df = df[df["is_open"] == 1]
 
 # %%
@@ -55,6 +80,7 @@ df["minutes_until_close"] = (
     - df["minute"]
 )
 
+#What hour in the entire week
 df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
 
 # %%
@@ -230,3 +256,4 @@ else:
 
     with open(readme_path, "w") as f:
         f.writelines(lines)
+

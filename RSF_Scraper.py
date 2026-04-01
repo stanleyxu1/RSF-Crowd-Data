@@ -58,39 +58,9 @@ feels_like = temperature["current"]["apparent_temperature"]
 precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
-#%%
-#Get CURRENT forecasted temp
-current_hour_str = now.strftime("%Y-%m-%dT%H:00")
-origin = now - timedelta(hours=1)
-date_str = origin.strftime("%Y-%m-%d")
- 
-forecastURL = (
-    "https://api.open-meteo.com/v1/forecast"
-    "?latitude=37.86866369127376"
-    "&longitude=-122.26281535768102"
-    "&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation"
-    "&models=gfs_seamless"
-    "&temperature_unit=fahrenheit"
-    "&timezone=America/Los_Angeles"
-    "&wind_speed_unit=mph"
-    "&precipitation_unit=inch"
-    f"&start_date={date_str}&end_date={date_str}"
-)
-forecast = requests.get(forecastURL).json()
-times = forecast["hourly"]["time"]
-idx = times.index(current_hour_str)
- 
-temp_forecast = forecast["hourly"]["temperature_2m"][idx]
-feels_like_forecast = forecast["hourly"]["apparent_temperature"][idx]
-precipitation_forecast = forecast["hourly"]["precipitation"][idx]
-humidity_forecast = forecast["hourly"]["relative_humidity_2m"][idx]
- 
-# %%
-file_path = 'RSF_Dataset.csv'
-file_exists = os.path.isfile(file_path)
-
 
 # %%
+#ALL rows in dataset
 row = [
     now.strftime("%Y-%m-%d %H:%M:%S"), # timestamp
     count,                             # current_count
@@ -102,23 +72,16 @@ row = [
     temp,
     feels_like,
     precipitation,
-    humidity,
-    temp_forecast,
-    feels_like_forecast,
-    precipitation_forecast,
-    humidity_forecast,
+    humidity
 ]
 
 
 # %%
+file_path = 'RSF_Dataset.csv'
+
 with open(file_path, mode='a', newline='') as f:
     writer = csv.writer(f)
-    if not file_exists:
-        writer.writerow(['timestamp', 'current_count', 'capacity', 'percent_full', 'weekday', 'hour', 'minute',
-                         'temperature', 'feels_like', 'precipitation', 'humidity',
-                         'temperature_forecast', 'feels_like_forecast', 'precipitation_forecast', 'humidity_forecast'])
-    
+
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
-
 

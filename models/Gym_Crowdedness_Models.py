@@ -49,7 +49,7 @@ for date, (open_h, close_h) in spring_break.items():
 #Compute is_open
 df["is_open"] = (
     (df["hour"] >= df["open_hour"]) &
-    (df["hour"] < df["close_hour"])
+    (df["hour"] <= df["close_hour"])
 ).astype(int)
 
 #%%

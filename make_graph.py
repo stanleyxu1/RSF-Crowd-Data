@@ -8,7 +8,18 @@ import numpy as np
 # Load dataset
 df = pd.read_csv("RSF_Dataset.csv")
 
+# Convert timestamp
 df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+# Extract hour
+df["time_bin"] = df["timestamp"].dt.round("30min")
+
+# Keep only gym open hours
+df["hour"] = df["time_bin"].dt.hour
+df["minute"] = df["time_bin"].dt.minute
+
+
+#%%
 df["open_hour"] = 7
 df["close_hour"] = 23
 
@@ -42,6 +53,9 @@ df["is_open"] = (
     (df["hour"] >= df["open_hour"]) &
     (df["hour"] < df["close_hour"])
 ).astype(int)
+
+df = df[df['is_open'] == 1]
+
 
 # %%
 # Group data

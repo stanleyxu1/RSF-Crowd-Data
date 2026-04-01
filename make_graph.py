@@ -8,17 +8,40 @@ import numpy as np
 # Load dataset
 df = pd.read_csv("RSF_Dataset.csv")
 
-# Convert timestamp
 df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["open_hour"] = 7
+df["close_hour"] = 23
 
-# Extract hour
-df["time_bin"] = df["timestamp"].dt.round("30min")
+# weekend opening time
+df.loc[df["weekday"].isin([5,6]), "open_hour"] = 8
 
-# Keep only gym open hours
-df["hour"] = df["time_bin"].dt.hour
-df["minute"] = df["time_bin"].dt.minute
-df = df[(df["hour"] >= 7) & (df["hour"] <= 23)]
+# Saturday closing time
+df.loc[df["weekday"] == 5, "close_hour"] = 18
 
+#SPRING BREAK HOURS
+spring_break = {
+    "2026-03-23": (8, 20),
+    "2026-03-24": (8, 20),
+    "2026-03-25": (8, 20),
+    "2026-03-26": (8, 20),
+    "2026-03-27": (8, 20),
+    "2026-03-28": (8, 18),
+    "2026-03-29": (8, 20)
+}
+
+# Apply spring break overrides
+df["date_str"] = df["timestamp"].dt.strftime("%Y-%m-%d")
+
+for date, (open_h, close_h) in spring_break.items():
+    mask = df["date_str"] == date
+    df.loc[mask, "open_hour"] = open_h
+    df.loc[mask, "close_hour"] = close_h
+
+#Compute is_open
+df["is_open"] = (
+    (df["hour"] >= df["open_hour"]) &
+    (df["hour"] < df["close_hour"])
+).astype(int)
 
 # %%
 # Group data

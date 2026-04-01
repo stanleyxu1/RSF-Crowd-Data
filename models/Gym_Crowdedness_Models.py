@@ -46,13 +46,20 @@ for date, (open_h, close_h) in spring_break.items():
     df.loc[mask, "open_hour"] = open_h
     df.loc[mask, "close_hour"] = close_h
 
-
+#Compute is_open
 df["is_open"] = (
     (df["hour"] >= df["open_hour"]) &
     (df["hour"] < df["close_hour"])
 ).astype(int)
 
-
+#%%
+#add is_open col to dataset
+df.drop(columns=["open_hour", "close_hour", "date_str"], inplace=True)
+df.to_csv(csv_path, index=False)
+#%%
+df_check = pd.read_csv(csv_path)
+print(df_check.columns.tolist())
+print(df_check["is_open"].value_counts())
 #%%
 #Last Percent Full (ML Feature)
 df["last_percent_full"] = df["percent_full"].shift(1)

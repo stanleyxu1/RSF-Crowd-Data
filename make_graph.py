@@ -44,16 +44,17 @@ df["date_str"] = df["timestamp"].dt.strftime("%Y-%m-%d")
 
 for date, (open_h, close_h) in spring_break.items():
     mask = df["date_str"] == date
-    df.loc[mask, "open_hour"] = open_h
-    df.loc[mask, "close_hour"] = close_h
+    df.loc[mask, "open_hour"] = None #open_h
+    df.loc[mask, "close_hour"] = None #close_h
 
 #Compute is_open
 df["is_open"] = (
     (df["hour"] >= df["open_hour"]) &
-    (df["hour"] < df["close_hour"])
+    (df["hour"] <= df["close_hour"])
 ).astype(int)
 
 df = df[df['is_open'] == 1]
+
 
 
 # %%

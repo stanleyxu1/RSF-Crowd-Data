@@ -53,14 +53,6 @@ df["is_open"] = (
 ).astype(int)
 
 #%%
-#add is_open col to dataset
-df.drop(columns=["open_hour", "close_hour", "date_str"], inplace=True)
-df.to_csv(csv_path, index=False)
-#%%
-df_check = pd.read_csv(csv_path)
-print(df_check.columns.tolist())
-print(df_check["is_open"].value_counts())
-#%%
 #Last Percent Full (ML Feature)
 df["last_percent_full"] = df["percent_full"].shift(1)
 
@@ -300,4 +292,3 @@ else:
         f.writelines(lines)
 
 
-# %%

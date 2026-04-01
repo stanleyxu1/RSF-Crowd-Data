@@ -18,7 +18,7 @@ df["time_bin"] = df["timestamp"].dt.round("30min")
 df["hour"] = df["time_bin"].dt.hour
 df["minute"] = df["time_bin"].dt.minute
 
-
+df = df[(df["hour"] >= 7) & (df["hour"] <= 23)]
 #%%
 df["open_hour"] = 7
 df["close_hour"] = 23

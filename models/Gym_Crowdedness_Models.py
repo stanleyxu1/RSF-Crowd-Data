@@ -15,7 +15,7 @@ csv_path = script_dir.parent / "RSF_Dataset.csv"
 df = pd.read_csv(csv_path)
 
 # %%
-print(df)
+df
 # %%
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 df["open_hour"] = 7

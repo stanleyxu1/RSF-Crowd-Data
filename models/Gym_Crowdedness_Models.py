@@ -206,7 +206,7 @@ featuresXGB = [
     "last_percent_full",
     "weekday_hour",
     "last_10_mins",
-    "last_15_mins"
+    "last_15_mins",
 ]
 
 X_XGB = df.iloc[1:][featuresXGB]
@@ -235,6 +235,25 @@ mse_test_xgb = np.sqrt(mean_squared_error(y_test_XGB, xgb_predictions))
 print("Mean Absolute Error (XGBoost):", mae_test_xgb)
 print("RMSE (XGBoost):", mse_test_xgb)
 
+#%%
+importance_XGB = xgb_model.feature_importances_
+
+feature_importance_XGB = pd.DataFrame({
+    "feature": featuresXGB,
+    "importance": importance_XGB
+}).sort_values(by="importance", ascending=False)
+
+print(feature_importance_XGB)
+
+feature_importance_XGB.plot(
+    x="feature",
+    y="importance",
+    kind="bar",
+    legend=False
+)
+plt.title("Feature Importance (XGBoost)")
+plt.ylabel("Importance")
+plt.show()
 
 # %%
 import datetime, pytz

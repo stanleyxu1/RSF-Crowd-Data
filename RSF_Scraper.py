@@ -47,6 +47,7 @@ temperatureURL = (
     "?latitude=37.86866369127376"
     "&longitude=-122.26281535768102"
     "&current=temperature_2m,apparent_temperature,precipitation,relative_humidity_2m"
+    "&hourly=precipitation_probability"
     "&temperature_unit=fahrenheit"
     "&timezone=America/Los_Angeles"
     "&forecast_days=1"
@@ -58,6 +59,15 @@ feels_like = temperature["current"]["apparent_temperature"]
 precipitation = temperature["current"]["precipitation"]
 humidity = temperature["current"]["relative_humidity_2m"]
 
+#%%
+#Capture precipitation probability
+current_hour_str = now.strftime("%Y-%m-%dT%H:00")
+hourly_times = temperature["hourly"]["time"]
+precipitation_prob  = temperature["hourly"]["precipitation_probability"]
+
+if current_hour_str in hourly_times:
+    idx = hourly_times.index(current_hour_str)
+    precip_prob = precipitation_prob[idx]
 
 # %%
 #ALL rows in dataset
@@ -72,7 +82,8 @@ row = [
     temp,
     feels_like,
     precipitation,
-    humidity
+    humidity,
+    precip_prob
 ]
 
 
@@ -85,3 +96,5 @@ with open(file_path, mode='a', newline='') as f:
     # Ensure 'row' is defined before this (as you have it)
     writer.writerow(row)
 
+
+# %%

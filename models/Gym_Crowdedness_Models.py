@@ -53,9 +53,10 @@ df["is_open"] = (
 ).astype(int)
 
 #%%
-#Last Percent Full (ML Feature)
+#Lag Features, percent full
 df["last_percent_full"] = df["percent_full"].shift(1)
-
+df['last_10_mins'] = df['percent_full'].shift(2)
+df['last_15_mins'] = df['percent_full'].shift(3)
 
 # %%
 #Turning Dates to Timeseries type
@@ -96,7 +97,7 @@ features = [
     "week_of_year",
     "minutes_until_close",
     "last_percent_full",
-    "weekday_hour"
+    "weekday_hour",
 ]
 
 
@@ -195,6 +196,25 @@ plt.ylabel("Importance")
 plt.show()
 
 #%%
+#make new features and training data WITH added lag features
+featuresXGB = [
+    "hour_sin",
+    "hour_cos",
+    "weekday",
+    "week_of_year",
+    "minutes_until_close",
+    "last_percent_full",
+    "weekday_hour",
+    "last_10_mins",
+    "last_15_mins"
+]
+
+X_XGB = df.iloc[1:][featuresXGB]
+y_XGB = df[1:]["percent_full"]
+
+X_train_XGB, X_test_XGB, y_train_XGB, y_test_XGB = train_test_split(X_XGB, y_XGB, test_size=0.2, random_state=42)
+
+#%%
 xgb_model = XGBRegressor(
     n_estimators=200,
     max_depth=6,
@@ -205,15 +225,16 @@ xgb_model = XGBRegressor(
     n_jobs=-1
 )
 
-xgb_model.fit(X_train, y_train)
-xgb_predictions = xgb_model.predict(X_test)
+xgb_model.fit(X_train_XGB, y_train_XGB)
+xgb_predictions = xgb_model.predict(X_test_XGB)
 
 # Evaluation
-mae_test_xgb = mean_absolute_error(y_test, xgb_predictions)
-mse_test_xgb = np.sqrt(mean_squared_error(y_test, xgb_predictions))
+mae_test_xgb = mean_absolute_error(y_test_XGB, xgb_predictions)
+mse_test_xgb = np.sqrt(mean_squared_error(y_test_XGB, xgb_predictions))
 
 print("Mean Absolute Error (XGBoost):", mae_test_xgb)
 print("RMSE (XGBoost):", mse_test_xgb)
+
 
 # %%
 import datetime, pytz
@@ -291,3 +312,5 @@ else:
         f.writelines(lines)
 
 
+
+# %%

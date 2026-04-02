@@ -279,6 +279,8 @@ minutes_until_close = (close_hour_future - future_hour) * 60 - future_datetime.m
 week_of_year = future_datetime.isocalendar()[1]
 weekday_hour = weekday * 24 + future_hour
 last_percent_full = df['percent_full'].iloc[-1]
+last_10_mins = df['percent_full'].iloc[-2]
+last_15_mins = df['percent_full'].iloc[-3]
 print(f"Local time: {now}, future_hour: {future_hour}, weekday: {weekday}")
 if future_hour < open_hour or future_hour >= close_hour_future:
     print(f"Gym is closed at {future_hour}:00. No prediction made.")
@@ -293,11 +295,23 @@ else:
         last_percent_full,
         weekday_hour
     ]], columns=features)
+    
+    X_future_XGB = pd.DataFrame([[
+        hour_sin,
+        hour_cos,
+        weekday,
+        week_of_year,
+        minutes_until_close,
+        last_percent_full,
+        weekday_hour,
+        last_10_mins,
+        last_15_mins
+    ]], columns=features)
 
     # Take predicted values in 1 hour (clips predictions to be ONLY 0 to 100 percent)
     predicted_percent_full = np.clip(model.predict(X_future), 0, 100)
     LinReg_predicted_percent_full = np.clip(LinReg.predict(X_future), 0, 100)
-    XGB_predicted_percent_full = np.clip(xgb_model.predict(X_future), 0, 100)
+    XGB_predicted_percent_full = np.clip(xgb_model.predict(X_future_XGB), 0, 100)
 
     readme_path = script_dir.parent / "README.md"
     marker = "<!-- GYM_PREDICTION -->"

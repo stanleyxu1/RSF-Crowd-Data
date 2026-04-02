@@ -15,7 +15,7 @@ csv_path = script_dir.parent / "RSF_Dataset.csv"
 df = pd.read_csv(csv_path)
 
 # %%
-df
+print(df)
 # %%
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 df["open_hour"] = 7
@@ -87,7 +87,6 @@ df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
 corr_target = df.corr(numeric_only=True)["percent_full"].sort_values(ascending=False)
 
 print(corr_target)
-
 
 # %%
 features = [

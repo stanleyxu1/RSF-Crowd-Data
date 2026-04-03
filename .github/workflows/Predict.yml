@@ -16,13 +16,18 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        ref:main
 
     - name: Pull latest dataset from data-branch
       run: |
         git fetch origin data-branch
-        # merge only the CSV into main
-        git checkout origin/data-branch -- RSF_Dataset.csv
+        git restore --source origin/data-branch RSF_Dataset.csv
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        
     - name: Run prediction
       run: python models/Model_Predict.py
 

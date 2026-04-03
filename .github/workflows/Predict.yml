@@ -1,6 +1,8 @@
 name: Predict Occupancy
 on:
   push:
+    branches:
+      data-branch
     paths:
       - 'RSF_Dataset.csv'
   workflow_dispatch:

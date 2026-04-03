@@ -6,58 +6,53 @@ on:
     paths:
       - 'RSF_Dataset.csv'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
-  predict:
+  run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout data-branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: data-branch
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
+    # Step 1: Checkout data-branch
+    - name: Checkout data-branch
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: data-branch
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    # Step 2: Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
 
-      - name: Run prediction
-        run: python models/Model_Predict.py
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
-      - name: Generate graph
-        run: python make_graph.py
+    # Step 4: Run predictions on data-branch
+    - name: Run prediction
+      run: python models/Model_Predict.py
 
-      - name: Commit predictions to data-branch
-        run: |
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add README.md crowd_graph.png models/*.pkl
-          git commit -m "Update predictions: $(date) [skip ci]" || echo "No changes"
-          git push origin data-branch
+    # Step 5: Generate graph
+    - name: Generate graph
+      run: python make_graph.py
 
-  update-main:
-    runs-on: ubuntu-latest
-    needs: predict
-    steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: main
+    # Step 6: Commit predictions to data-branch
+    - name: Commit predictions to data-branch
+      run: |
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
+        git add README.md crowd_graph.png models/*.pkl
+        git commit -m "Update predictions: $(date)" || echo "No changes"
+        git push origin data-branch
 
-      - name: Copy files from data-branch to main
-        run: |
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git fetch origin data-branch
-          git checkout origin/data-branch -- README.md crowd_graph.png
-          git add README.md crowd_graph.png
-          git commit -m "Updated predictions from data-branch [skip ci]" || echo "No changes"
-          git push origin main
+    # Step 7: Merge only README.md into main
+    - name: Merge README.md to main
+      run: |
+        git checkout main
+        git pull origin main
+        git checkout data-branch -- README.md crowd_graph.png
+        git add README.md crowd_graph.png
+        git commit -m "Updated predictions from data-branch" || echo "No changes"
+        git push origin main

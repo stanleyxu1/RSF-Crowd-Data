@@ -306,7 +306,7 @@ else:
         weekday_hour,
         last_10_mins,
         last_15_mins
-    ]], columns=features)
+    ]], columns=featuresXGB)
 
     # Take predicted values in 1 hour (clips predictions to be ONLY 0 to 100 percent)
     predicted_percent_full = np.clip(model.predict(X_future), 0, 100)

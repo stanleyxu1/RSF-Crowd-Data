@@ -12,7 +12,7 @@ df = pd.read_csv("RSF_Dataset.csv")
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 
 # Extract hour
-df["time_bin"] = df["timestamp"].dt.round("30min")
+df["time_bin"] = df["timestamp"].dt.round("15min")
 
 # Keep only gym open hours
 df["hour"] = df["time_bin"].dt.hour

@@ -50,8 +50,9 @@ jobs:
     # Step 7: Merge only README.md into main
     - name: Merge README.md to main
       run: |
-        git fetch origin main
         git checkout main
+        git pull origin main
         git checkout data-branch -- README.md
+        git add README.md
         git commit -m "Sync predictions from data-branch: $(date)" || echo "No changes"
         git push origin main

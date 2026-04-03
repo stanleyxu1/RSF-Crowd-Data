@@ -39,7 +39,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
 
-          git add README.md graphs/ models/*.pkl
+          git add README.md crowd_graph.png models/*.pkl
 
           git commit -m "Last Predicted: $(date)" || echo "No changes"
 

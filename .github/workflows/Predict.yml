@@ -1,0 +1,25 @@
+name: Predict Occupancy
+on:
+  push:
+    paths:
+      - 'RSF_Dataset.csv'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: pip install -r requirements.txt
+      - run: python models/Model_Predict.py
+      - run: python make_graph.py
+      - run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add .
+          git commit -m "Last Predicted: $(date)" || exit 0
+          git push

@@ -1,7 +1,7 @@
-name: Gym Scraper
+name: Train Model
 on:
   schedule:
-    - cron: '*/20 * * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -14,11 +14,10 @@ jobs:
         with:
           python-version: '3.9'
       - run: pip install -r requirements.txt
-      - run: python models/Gym_Crowdedness_Models.py
-      - run: python make_graph.py
+      - run: python models/Model_Train.py
       - run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add .
-          git commit -m "Last Updated: $(date)" || exit 0
+          git add models/*.pkl
+          git commit -m "Retrain models: $(date)" || exit 0
           git push

@@ -12,37 +12,32 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout main branch
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Pull latest dataset from data-branch
-        run: |
-          git fetch origin data-branch
-          git checkout origin/data-branch -- RSF_Dataset.csv
+    - name: Pull latest dataset from data-branch
+      run: |
+        git fetch origin data-branch
+        # merge only the CSV into main
+        git checkout origin/data-branch -- RSF_Dataset.csv
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
+    - name: Run prediction
+      run: python models/Model_Predict.py
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+    - name: Generate graph
+      run: python make_graph.py
 
-      - name: Run prediction
-        run: python models/Model_Predict.py
+    - name: Commit and push results to main
+      run: |
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
 
-      - name: Generate graph
-        run: python make_graph.py
+        git checkout main  # ensure we are on main
 
-      - name: Commit and push results
-        run: |
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
+        git add README.md crowd_graph.png RSF_Dataset.csv models/*.pkl
 
-          git add README.md crowd_graph.png RSF_Dataset.csv models/*.pkl
+        git commit -m "Last Predicted: $(date)" || echo "No changes"
 
-          git commit -m "Last Predicted: $(date)" || echo "No changes"
-
-          git push origin main
+        git push origin main

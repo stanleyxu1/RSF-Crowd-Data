@@ -35,7 +35,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
 
-          git add models/*.pkl README.md
+          git add models/*.pkl RSF_Dataset.csv
 
           git commit -m "Retrain models: $(date)" || exit 0
 

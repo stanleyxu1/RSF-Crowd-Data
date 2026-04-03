@@ -38,7 +38,6 @@ jobs:
     - name: Generate graph
       run: python make_graph.py
 
-    # Step 6: Commit predictions to data-branch
     - name: Commit predictions to data-branch
       run: |
         git config user.name "GitHub Action"
@@ -47,12 +46,14 @@ jobs:
         git commit -m "Update predictions: $(date)" || echo "No changes"
         git push origin data-branch
 
-    # Step 7: Merge only README.md into main
+    # Step 7: Merge only README.md + graph into main
     - name: Merge README.md to main
       run: |
+        git fetch origin main          # fetch latest main
         git checkout main
         git pull origin main
-        git checkout data-branch -- README.md crowd_graph.png
+        git checkout HEAD -- .         # clean working state (optional safety)
+        git checkout origin/data-branch -- README.md crowd_graph.png  # use remote ref, not local
         git add README.md crowd_graph.png
         git commit -m "Updated predictions from data-branch" || echo "No changes"
         git push origin main

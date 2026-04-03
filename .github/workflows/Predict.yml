@@ -34,7 +34,7 @@ jobs:
       - name: Generate graph
         run: python make_graph.py
 
-      - name: Commit predictions to data-branch
+      - name: Commit to data-branch
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - name: Copy files from data-branch to main
+      - name: Copy README and graph to main
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"

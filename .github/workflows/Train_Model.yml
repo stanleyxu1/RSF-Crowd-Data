@@ -9,15 +9,34 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # important for branch switching
+
+      - name: Pull latest data from data-branch
+        run: |
+          git fetch origin data-branch
+          git checkout origin/data-branch -- RSF_Dataset.csv
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-      - run: pip install -r requirements.txt
-      - run: python models/Model_Train.py
-      - run: |
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model
+        run: python models/Model_Train.py
+
+      - name: Commit and push model updates
+        run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add models/*.pkl
+
+          git add models/*.pkl README.md
+
           git commit -m "Retrain models: $(date)" || exit 0
-          git push
+
+          git push origin main

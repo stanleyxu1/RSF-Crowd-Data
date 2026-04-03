@@ -10,16 +10,37 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest dataset from data-branch
+        run: |
+          git fetch origin data-branch
+          git checkout origin/data-branch -- RSF_Dataset.csv
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-      - run: pip install -r requirements.txt
-      - run: python models/Model_Predict.py
-      - run: python make_graph.py
-      - run: |
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run prediction
+        run: python models/Model_Predict.py
+
+      - name: Generate graph
+        run: python make_graph.py
+
+      - name: Commit and push results
+        run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-          git add .
-          git commit -m "Last Predicted: $(date)" || exit 0
-          git push
+
+          git add README.md graphs/ models/*.pkl
+
+          git commit -m "Last Predicted: $(date)" || echo "No changes"
+
+          git push origin main

@@ -52,7 +52,7 @@ jobs:
       run: |
         git checkout main
         git pull origin main
-        git checkout data-branch -- README.md
-        git add README.md
-        git commit -m "Sync predictions from data-branch: $(date)" || echo "No changes"
+        git checkout data-branch -- README.md crowd_graph.png
+        git add README.md crowd_graph.png
+        git commit -m "Updated predictions from data-branch" || echo "No changes"
         git push origin main

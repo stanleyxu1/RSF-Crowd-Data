@@ -2,7 +2,7 @@ name: Predict Occupancy
 on:
   push:
     branches:
-      data-branch
+      - data-branch
     paths:
       - 'RSF_Dataset.csv'
   workflow_dispatch:
@@ -12,37 +12,46 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout main branch
+
+    # Step 1: Checkout data-branch
+    - name: Checkout data-branch
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        ref:main
+        ref: data-branch
 
-    - name: Pull latest dataset from data-branch
-      run: |
-        git fetch origin data-branch
-        git restore --source origin/data-branch RSF_Dataset.csv
-
+    # Step 2: Set up Python
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
-        
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    # Step 4: Run predictions on data-branch
     - name: Run prediction
       run: python models/Model_Predict.py
 
+    # Step 5: Generate graph
     - name: Generate graph
       run: python make_graph.py
 
-    - name: Commit and push results to main
+    # Step 6: Commit predictions to data-branch
+    - name: Commit predictions to data-branch
       run: |
         git config user.name "GitHub Action"
         git config user.email "action@github.com"
+        git add README.md crowd_graph.png models/*.pkl
+        git commit -m "Update predictions: $(date)" || echo "No changes"
+        git push origin data-branch
 
-        git checkout main  # ensure we are on main
-
-        git add README.md crowd_graph.png RSF_Dataset.csv models/*.pkl
-
-        git commit -m "Last Predicted: $(date)" || echo "No changes"
-
+    # Step 7: Merge only README.md into main
+    - name: Merge README.md to main
+      run: |
+        git fetch origin main
+        git checkout main
+        git checkout data-branch -- README.md
+        git commit -m "Sync predictions from data-branch: $(date)" || echo "No changes"
         git push origin main

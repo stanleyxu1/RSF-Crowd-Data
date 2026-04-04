@@ -7,6 +7,10 @@ on:
       - 'RSF_Dataset.csv'
   workflow_dispatch:
 
+concurrency:
+  group: main-branch-writes
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

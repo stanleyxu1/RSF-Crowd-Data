@@ -43,7 +43,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add README.md crowd_graph.png models/*.pkl
-          git commit -m "Update predictions: $(date) [skip ci]" || echo "No changes"
+          git commit -m "Update predictions: $(date)" || echo "No changes"
           git push origin data-branch
 
   update-main:
@@ -63,5 +63,5 @@ jobs:
           git fetch origin data-branch
           git checkout origin/data-branch -- README.md crowd_graph.png
           git add README.md crowd_graph.png
-          git commit -m "Updated predictions from data-branch [skip ci]" || echo "No changes"
+          git commit -m "Updated predictions from data-branch" || echo "No changes"
           git push origin main

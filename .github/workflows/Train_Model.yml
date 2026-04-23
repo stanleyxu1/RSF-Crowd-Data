@@ -43,5 +43,5 @@ jobs:
           git add models/*.pkl RSF_Dataset.csv
 
           git commit -m "Retrain models: $(date)" || exit 0
-
+          git pull origin main --rebase
           git push origin main

@@ -1,7 +1,7 @@
 <!-- GYM_PREDICTION -->
 **Gym Crowdedness Predictor (Next Hour)**
 
-XGBoost prediction at 8:00 on April 23, 2026: 63.6%,  
-Random Forest prediction at 8:00 on April 23, 2026: 64.3%,  
-Linear Regression prediction at 8:00 on April 23, 2026: 71.0%
+XGBoost prediction at 8:00 on April 23, 2026: 62.2%,  
+Random Forest prediction at 8:00 on April 23, 2026: 63.3%,  
+Linear Regression prediction at 8:00 on April 23, 2026: 69.9%
 ![Gym Crowd Graph](crowd_graph.png)

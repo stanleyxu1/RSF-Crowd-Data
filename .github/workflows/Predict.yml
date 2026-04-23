@@ -61,6 +61,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git fetch origin data-branch
+          git pull origin main --rebase
           git checkout origin/data-branch -- README.md crowd_graph.png
           git add README.md crowd_graph.png
           git commit -m "Updated predictions from data-branch" || echo "No changes"

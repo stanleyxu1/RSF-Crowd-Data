@@ -374,7 +374,8 @@ for horizon, model in models.items():
     pkl_path = models_dir / f"xgb_model_{horizon}min.pkl"
     joblib.dump(model, pkl_path)
     print(f"  Saved: {pkl_path}")
-
+import xgboost as xgb
+print(f"Current XGBoost version: {xgb.__version__}")
 print("\nAll models trained and saved successfully")
 print(f"Models available for {list(models.keys())} minute predictions")
 print(f"Current XGBoost version: {xgb_model.__version__}")

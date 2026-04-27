@@ -54,7 +54,7 @@ df["is_open"] = (
 
 #%%
 #Lag Features, percent full
-df["last_percent_full"] = df["percent_full"].shift(1)
+df["last_5_mins"] = df["percent_full"].shift(1)
 df['last_10_mins'] = df['percent_full'].shift(2)
 df['last_15_mins'] = df['percent_full'].shift(3)
 
@@ -113,7 +113,7 @@ df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
 
 #%%
 # Trend features
-df['delta_5'] = df['last_percent_full'] - df['last_10_mins']
+df['delta_5'] = df['last_5_mins'] - df['last_10_mins']
 df['delta_10'] = df['last_10_mins'] - df['last_15_mins']
 # %%
 corr_target = df.corr(numeric_only=True)["percent_full"].sort_values(ascending=False)
@@ -127,7 +127,7 @@ features = [
     "weekday",
     "week_of_year",
     "minutes_until_close",
-    "last_percent_full",
+    "last_5_mins",
     "weekday_hour",
 ]
  
@@ -140,7 +140,7 @@ featuresXGB = [
     "minutes_until_close",
  
     # recency
-    "last_percent_full",
+    "last_5_mins",
     "last_10_mins",
     "last_15_mins",
  
@@ -197,17 +197,17 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     weekday_hour = weekday * 24 + future_hour
     
     # Get most recent lag features from dataframe
-    last_percent_full = df['percent_full'].iloc[-1]
-    last_10_mins = df['percent_full'].iloc[-2] if len(df) > 1 else last_percent_full
-    last_15_mins = df['percent_full'].iloc[-3] if len(df) > 2 else last_percent_full
+    last_5_mins = df['percent_full'].iloc[-1]
+    last_10_mins = df['percent_full'].iloc[-2] if len(df) > 1 else last_5_mins
+    last_15_mins = df['percent_full'].iloc[-3] if len(df) > 2 else last_5_mins
     
     # Trend features
-    delta_5 = last_percent_full - last_10_mins
+    delta_5 = last_5_mins - last_10_mins
     delta_10 = last_10_mins - last_15_mins
     
     # Rolling stats
-    rolling_mean_15 = df['percent_full'].iloc[-3:].mean() if len(df) > 0 else last_percent_full
-    rolling_mean_30 = df['percent_full'].iloc[-6:].mean() if len(df) > 0 else last_percent_full
+    rolling_mean_15 = df['percent_full'].iloc[-3:].mean() if len(df) > 0 else last_5_mins
+    rolling_mean_30 = df['percent_full'].iloc[-6:].mean() if len(df) > 0 else last_5_mins
     rolling_std_15 = df['percent_full'].iloc[-3:].std() if len(df) > 1 else 0
     rolling_std_30 = df['percent_full'].iloc[-6:].std() if len(df) > 1 else 0
     
@@ -226,7 +226,7 @@ for horizon_mins, xgb_model in models_by_horizon.items():
             weekday,
             weekday_hour,
             minutes_until_close,
-            last_percent_full,
+            last_5_mins,
             last_10_mins,
             last_15_mins,
             delta_5,

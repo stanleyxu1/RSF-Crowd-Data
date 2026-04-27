@@ -253,6 +253,9 @@ for horizon_mins, xgb_model in models_by_horizon.items():
             'time': future_datetime,
             'prediction': prediction
         }
+        print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
+        print(f"Feature values: {X_future_XGB.values}")
+
 
     #README update
 readme_path = script_dir.parent / "README.md"
@@ -313,6 +316,4 @@ print("DF length:", len(df))
 print("Last percent_full values:", df['percent_full'].tail())
 print(f"DataFrame shape: {df.shape}")
 print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
-print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
-print(f"Feature values: {X_future_XGB.values}")
 # %%

@@ -311,4 +311,8 @@ if readme_path.exists():
 print("CSV exists:", csv_path.exists())
 print("DF length:", len(df))
 print("Last percent_full values:", df['percent_full'].tail())
+print(f"DataFrame shape: {df.shape}")
+print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
+print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
+print(f"Feature values: {X_future_XGB.values}")
 # %%

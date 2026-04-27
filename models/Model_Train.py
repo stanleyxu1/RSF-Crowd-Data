@@ -370,8 +370,5 @@ for horizon, model in models.items():
  
 print("\nAll models trained and saved successfully")
 print(f"Models available for {list(models.keys())} minute predictions")
-print(f"DataFrame shape: {df.shape}")
-print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
-print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
-print(f"Feature values: {X_future_XGB.values}")
+
 # %%

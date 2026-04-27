@@ -365,9 +365,16 @@ models_dir = Path("models")
 models_dir.mkdir(exist_ok=True)
  
 for horizon, model in models.items():
-    save_path = f"xgb_model_{horizon}min.pkl"
-    joblib.dump(model, save_path)
- 
+    # Save using XGBoost's format
+    json_path = models_dir / f"xgb_model_{horizon}min.json"
+    model.get_booster().save_model(str(json_path))
+    print(f"  Saved: {json_path}")
+    
+    #save as pickle for joblib compatibility
+    pkl_path = models_dir / f"xgb_model_{horizon}min.pkl"
+    joblib.dump(model, pkl_path)
+    print(f"  Saved: {pkl_path}")
+
 print("\nAll models trained and saved successfully")
 print(f"Models available for {list(models.keys())} minute predictions")
 print(f"Current XGBoost version: {xgb_model.__version__}")

@@ -370,4 +370,8 @@ for horizon, model in models.items():
  
 print("\nAll models trained and saved successfully")
 print(f"Models available for {list(models.keys())} minute predictions")
+print("FEATURE VECTOR:")
+print(X_future_XGB)
+print("NaNs per column:")
+print(X_future_XGB.isna().sum())
 # %%

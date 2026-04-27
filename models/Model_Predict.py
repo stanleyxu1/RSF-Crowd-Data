@@ -255,7 +255,9 @@ if readme_path.exists():
         lines = f.readlines()
     
     # Build prediction text with all horizons
-    prediction_text = f"{marker}\n**Gym Crowdedness Predictor**\n\n"
+    prediction_lines = [f"{marker}"]
+    prediction_lines.append("**Gym Crowdedness Predictor**")
+    prediction_lines.append("")
     
     for horizon in [15, 30, 45]:
         if horizon in predictions_by_horizon:
@@ -263,12 +265,22 @@ if readme_path.exists():
             time_str = pred_data['time'].strftime("%H:%M")
             
             if pred_data['is_open']:
-                prediction_text += f"**{horizon}min ahead** ({time_str}): {pred_data['prediction']:.1f}%\n"
+                prediction_lines.append(f"**{horizon}min ahead** ({time_str}): {pred_data['prediction']:.1f}%")
             else:
-                prediction_text += f"**{horizon}min ahead** ({time_str}): Gym closed\n"
+                prediction_lines.append(f"**{horizon}min ahead** ({time_str}): Gym closed")
     
-    prediction_text += f"\n*Last updated: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}*\n"
+            if horizon != 45:
+                prediction_lines.append("")
+    prediction_lines.append("")
+    prediction_lines.append(f"*Last updated: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}*")
+    prediction_lines.append("")  
     
+    # Join with newlines
+    prediction_text = "\n".join(prediction_lines) + "\n"
+    
+    print("Preview of README update:")
+    print(prediction_text)
+
     # Find and replace or append
     found = False
     for i, line in enumerate(lines):

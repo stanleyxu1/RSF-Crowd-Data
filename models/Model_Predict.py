@@ -308,3 +308,7 @@ if readme_path.exists():
     with open(readme_path, "w") as f:
         f.writelines(lines)
 # %%
+print("CSV exists:", csv_path.exists())
+print("DF length:", len(df))
+print("Last percent_full values:", df['percent_full'].tail())
+# %%

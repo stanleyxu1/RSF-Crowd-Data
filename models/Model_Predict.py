@@ -316,4 +316,7 @@ print("DF length:", len(df))
 print("Last percent_full values:", df['percent_full'].tail())
 print(f"DataFrame shape: {df.shape}")
 print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
+print(f"Current XGBoost15 version: {xgb_model_15.__version__}")
+print(f"Current XGBoost30 version: {xgb_model_30.__version__}")
+print(f"Current XGBoost45 version: {xgb_model_45.__version__}")
 # %%

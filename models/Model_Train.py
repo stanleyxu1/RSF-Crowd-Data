@@ -370,5 +370,5 @@ for horizon, model in models.items():
  
 print("\nAll models trained and saved successfully")
 print(f"Models available for {list(models.keys())} minute predictions")
-
+print(f"Current XGBoost version: {xgb_model.__version__}")
 # %%

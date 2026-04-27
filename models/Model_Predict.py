@@ -219,16 +219,7 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     rolling_mean_30 = recent30.mean()
     rolling_std_30 = recent30.std()
     
-    # Check if gym is open
-    if future_hour < open_hour or future_hour >= close_hour:
-        predictions_by_horizon[horizon_mins] = {
-            'is_open': False,
-            'time': future_datetime,
-            'prediction': None
-        }
-    else:
-        # Create feature dataframe
-        X_future_XGB = pd.DataFrame([[
+    X_future_XGB = pd.DataFrame([[
             hour_sin,
             hour_cos,
             weekday,
@@ -243,18 +234,18 @@ for horizon_mins, xgb_model in models_by_horizon.items():
             rolling_mean_30,
             rolling_std_15,
             rolling_std_30
-        ]], columns=featuresXGB)
+    ]], columns=featuresXGB)
         
-        # Predict and clip to 0-100
-        prediction = np.clip(xgb_model.predict(X_future_XGB)[0], 0, 100)
+    # Predict and clip to 0-100
+    prediction = np.clip(xgb_model.predict(X_future_XGB)[0], 0, 100)
 
-        predictions_by_horizon[horizon_mins] = {
+    predictions_by_horizon[horizon_mins] = {
             'is_open': True,
             'time': future_datetime,
             'prediction': prediction
         }
-        print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
-        print(f"Feature values: {X_future_XGB.values}")
+    print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
+    print(f"Feature values: {X_future_XGB.values}")
 
 
     #README update

@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # important for branch switching
 
       - name: Pull latest data from data-branch
         run: |
@@ -39,9 +37,11 @@ jobs:
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
-
-          git add models/*.pkl RSF_Dataset.csv
-
+          
+          git add models/*.pkl
+          
           git commit -m "Retrain models: $(date)" || exit 0
-          git pull origin main --rebase
+          
+          # Merge main (not rebase) and accept data-branch's CSV version
+          git pull origin main --no-rebase -X theirs
           git push origin main

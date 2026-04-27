@@ -10,6 +10,7 @@ import joblib
 import datetime
 import pytz
 
+
 # %%
 script_dir = Path(__file__).parent  # models/
 csv_path = script_dir.parent / "RSF_Dataset.csv" 
@@ -253,6 +254,9 @@ for horizon_mins, xgb_model in models_by_horizon.items():
             'time': future_datetime,
             'prediction': prediction
         }
+        print(f"Any NaN in features: {X_future_XGB.isnull().any().any()}")
+        print(f"Feature values: {X_future_XGB.values}")
+
 
     #README update
 readme_path = script_dir.parent / "README.md"
@@ -307,4 +311,22 @@ if readme_path.exists():
     
     with open(readme_path, "w") as f:
         f.writelines(lines)
+# %%
+print("CSV exists:", csv_path.exists())
+print("DF length:", len(df))
+print("Last percent_full values:", df['percent_full'].tail())
+print(f"DataFrame shape: {df.shape}")
+print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
+
+import xgboost as xgb  
+
+print(f"Current XGBoost version: {xgb.__version__}")
+
+xgb_model_15 = joblib.load(script_dir / 'xgb_model_15min.pkl')
+print(f"Model type: {type(xgb_model_15)}")
+
+# Try a test prediction with dummy data
+test_input = [[0, 1, 0, 11, 700, 63, 62, 67, 1.3, -5.3, 68, 68.78, 6.36, 5.73]]
+test_pred = xgb_model_15.predict(test_input)
+print(f"Test prediction on realistic data: {test_pred[0]:.1f}%")
 # %%

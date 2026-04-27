@@ -5,10 +5,11 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 from pathlib import Path
 from xgboost import XGBRegressor
 import joblib
+import datetime
+import pytz
 
 # %%
 script_dir = Path(__file__).parent  # models/
@@ -58,11 +59,38 @@ df['last_10_mins'] = df['percent_full'].shift(2)
 df['last_15_mins'] = df['percent_full'].shift(3)
 
 # %%
+#Rolling mean and std
+df["rolling_mean_15"] = (
+    df["percent_full"]
+    .rolling(window=3, min_periods=1)
+    .mean()
+)
+ 
+df["rolling_std_15"] = (
+    df["percent_full"]
+    .rolling(window=3, min_periods=2)
+    .std()
+)
+ 
+df["rolling_mean_30"] = (
+    df["percent_full"]
+    .rolling(window=6, min_periods=1)
+    .mean()
+)
+ 
+df["rolling_std_30"] = (
+    df["percent_full"]
+    .rolling(window=6, min_periods=2)
+    .std()
+)
+
+# %%
 #Turning Dates to Timeseries type
 df = df.sort_values("timestamp")
 df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 df["week_of_year"] = df["timestamp"].dt.isocalendar().week.astype(int)
+df["minute"] = df["timestamp"].dt.minute
 
 #Is weekend
 df["is_weekend"] = df["weekday"].isin([5,6]).astype(int)
@@ -83,13 +111,16 @@ df["minutes_until_close"] = (
 #What hour in the entire week
 df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
 
+#%%
+# Trend features
+df['delta_5'] = df['last_percent_full'] - df['last_10_mins']
+df['delta_10'] = df['last_10_mins'] - df['last_15_mins']
 # %%
 corr_target = df.corr(numeric_only=True)["percent_full"].sort_values(ascending=False)
 
 print(corr_target)
  
 #%%
-#Collect necessary features for models
 features = [
     "hour_sin",
     "hour_cos",
@@ -101,108 +132,159 @@ features = [
 ]
  
 featuresXGB = [
+    # time
     "hour_sin",
     "hour_cos",
     "weekday",
-    "week_of_year",
+    "weekday_hour",              # ← week_of_year removed
     "minutes_until_close",
+ 
+    # recency
     "last_percent_full",
-    "weekday_hour",
     "last_10_mins",
     "last_15_mins",
+ 
+    # trend
+    "delta_5",
+    "delta_10",
+ 
+    # Rolling data
+    "rolling_mean_15",
+    "rolling_mean_30",
+    "rolling_std_15",
+    "rolling_std_30",
 ]
  
 #%%
 #Load Models
-xgb_model = joblib.load(script_dir / 'xgb_model.pkl')
-model     = joblib.load(script_dir / 'rf_model.pkl')
-LinReg    = joblib.load(script_dir / 'linreg_model.pkl')
-# %%
-import datetime, pytz
+xgb_model_15 = joblib.load(script_dir / 'xgb_model_15min.pkl')
+xgb_model_30 = joblib.load(script_dir / 'xgb_model_30min.pkl')
+xgb_model_45 = joblib.load(script_dir / 'xgb_model_45min.pkl')
+
 
 # Use your local timezone instead of UTC
 tz = pytz.timezone("America/Los_Angeles")
 now = datetime.datetime.now(tz)
-future_datetime = now + datetime.timedelta(hours=1)
 
-future_hour = future_datetime.hour  
-weekday = future_datetime.weekday() 
+# Prepare predictions for multiple horizons
+predictions_by_horizon = {}
+models_by_horizon = {15: xgb_model_15, 30: xgb_model_30, 45: xgb_model_45}
 
-# Hour encoding (cyclical)
-hour_rad = 2 * np.pi * future_hour / 24
-hour_sin = np.sin(hour_rad)
-hour_cos = np.cos(hour_rad)
 
-# Minutes until close
-open_hour = 8 if weekday in [5, 6] else 7
-close_hour_future = 18 if weekday == 5 else 23
+for horizon_mins, xgb_model in models_by_horizon.items():
 
-minutes_until_close = (close_hour_future - future_hour) * 60 - future_datetime.minute
-week_of_year = future_datetime.isocalendar()[1]
-weekday_hour = weekday * 24 + future_hour
-last_percent_full = df['percent_full'].iloc[-1]
-last_10_mins = df['percent_full'].iloc[-2]
-last_15_mins = df['percent_full'].iloc[-3]
-print(f"Local time: {now}, future_hour: {future_hour}, weekday: {weekday}")
-if future_hour < open_hour or future_hour >= close_hour_future:
-    print(f"Gym is closed at {future_hour}:00. No prediction made.")
-else:
-    # Everything from X_future creation onwards
-    X_future = pd.DataFrame([[
-        hour_sin,
-        hour_cos,
-        weekday,
-        week_of_year,
-        minutes_until_close,
-        last_percent_full,
-        weekday_hour
-    ]], columns=features)
+    future_datetime = now + datetime.timedelta(minutes=horizon_mins)
+    future_hour = future_datetime.hour
+    weekday = future_datetime.weekday()
     
-    X_future_XGB = pd.DataFrame([[
-        hour_sin,
-        hour_cos,
-        weekday,
-        week_of_year,
-        minutes_until_close,
-        last_percent_full,
-        weekday_hour,
-        last_10_mins,
-        last_15_mins
-    ]], columns=featuresXGB)
+    # Check if gym will be open at that time
+    open_hour = 8 if weekday in [5, 6] else 7
+    close_hour = 18 if weekday == 5 else 23
+    
+    # Check spring break hours
+    future_date_str_check = future_datetime.strftime("%Y-%m-%d")
+    if future_date_str_check in spring_break:
+        open_hour, close_hour = spring_break[future_date_str_check]
+    
+    # Hour encoding (cyclical)
+    hour_rad = 2 * np.pi * future_hour / 24
+    hour_sin = np.sin(hour_rad)
+    hour_cos = np.cos(hour_rad)
+    
+    # Minutes until close
+    minutes_until_close = (close_hour - future_hour) * 60 - future_datetime.minute
+    week_of_year = future_datetime.isocalendar()[1]
+    weekday_hour = weekday * 24 + future_hour
+    
+    # Get most recent lag features from dataframe
+    last_percent_full = df['percent_full'].iloc[-1]
+    last_10_mins = df['percent_full'].iloc[-2] if len(df) > 1 else last_percent_full
+    last_15_mins = df['percent_full'].iloc[-3] if len(df) > 2 else last_percent_full
+    
+    # Trend features
+    delta_5 = last_percent_full - last_10_mins
+    delta_10 = last_10_mins - last_15_mins
+    
+    # Rolling stats
+    rolling_mean_15 = df['percent_full'].iloc[-3:].mean() if len(df) > 0 else last_percent_full
+    rolling_mean_30 = df['percent_full'].iloc[-6:].mean() if len(df) > 0 else last_percent_full
+    rolling_std_15 = df['percent_full'].iloc[-3:].std() if len(df) > 1 else 0
+    rolling_std_30 = df['percent_full'].iloc[-6:].std() if len(df) > 1 else 0
+    
+    # Check if gym is open
+    if future_hour < open_hour or future_hour >= close_hour:
+        predictions_by_horizon[horizon_mins] = {
+            'is_open': False,
+            'time': future_datetime,
+            'prediction': None
+        }
+    else:
+        # Create feature dataframe
+        X_future_XGB = pd.DataFrame([[
+            hour_sin,
+            hour_cos,
+            weekday,
+            weekday_hour,
+            minutes_until_close,
+            last_percent_full,
+            last_10_mins,
+            last_15_mins,
+            delta_5,
+            delta_10,
+            rolling_mean_15,
+            rolling_mean_30,
+            rolling_std_15,
+            rolling_std_30
+        ]], columns=featuresXGB)
+        
+        # Predict and clip to 0-100
+        prediction = np.clip(xgb_model.predict(X_future_XGB)[0], 0, 100)
 
-    # Take predicted values in 1 hour (clips predictions to be ONLY 0 to 100 percent)
-    predicted_percent_full = np.clip(model.predict(X_future), 0, 100)
-    LinReg_predicted_percent_full = np.clip(LinReg.predict(X_future), 0, 100)
-    XGB_predicted_percent_full = np.clip(xgb_model.predict(X_future_XGB), 0, 100)
+        predictions_by_horizon[horizon_mins] = {
+            'is_open': True,
+            'time': future_datetime,
+            'prediction': prediction
+        }
 
-    readme_path = script_dir.parent / "README.md"
-    marker = "<!-- GYM_PREDICTION -->"
-
+    #README update
+readme_path = script_dir.parent / "README.md"
+marker = "<!-- GYM_PREDICTION -->"
+ 
+if readme_path.exists():
     with open(readme_path, "r") as f:
         lines = f.readlines()
-
-    future_date_str = future_datetime.strftime("%B %d, %Y")
-
-    new_line = (f"{marker}\n"
-            f"**Gym Crowdedness Predictor (Next Hour)**\n\n"
-            f"XGBoost prediction at {future_hour}:00 on {future_date_str}: {XGB_predicted_percent_full[0]:.1f}%,  \n"
-            f"Random Forest prediction at {future_hour}:00 on {future_date_str}: {predicted_percent_full[0]:.1f}%,  \n"
-            f"Linear Regression prediction at {future_hour}:00 on {future_date_str}: {LinReg_predicted_percent_full[0]:.1f}%\n")
-
+    
+    # Build prediction text with all horizons
+    prediction_text = f"{marker}\n**Gym Crowdedness Predictor**\n\n"
+    
+    for horizon in [15, 30, 45]:
+        if horizon in predictions_by_horizon:
+            pred_data = predictions_by_horizon[horizon]
+            time_str = pred_data['time'].strftime("%H:%M")
+            
+            if pred_data['is_open']:
+                prediction_text += f"**{horizon}min ahead** ({time_str}): {pred_data['prediction']:.1f}% full\n"
+            else:
+                prediction_text += f"**{horizon}min ahead** ({time_str}): Gym closed\n"
+    
+    prediction_text += f"\n*Last updated: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}*\n"
+    
+    # Find and replace or append
     found = False
     for i, line in enumerate(lines):
         if marker in line:
             j = i + 1
             while j < len(lines) and not lines[j].startswith("<!--"):
                 j += 1
+            # Preserve any images after the marker
             image_lines = [l for l in lines[i:j] if l.strip().startswith("![")]
-            lines[i:j] = [new_line] + image_lines
+            lines[i:j] = [prediction_text] + image_lines
             found = True
             break
-
+    
     if not found:
-        lines.append("\n" + new_line)
-
+        lines.append("\n" + prediction_text)
+    
     with open(readme_path, "w") as f:
         f.writelines(lines)
-
+# %%

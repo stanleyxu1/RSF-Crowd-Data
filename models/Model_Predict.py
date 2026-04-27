@@ -263,7 +263,7 @@ if readme_path.exists():
             time_str = pred_data['time'].strftime("%H:%M")
             
             if pred_data['is_open']:
-                prediction_text += f"**{horizon}min ahead** ({time_str}): {pred_data['prediction']:.1f}% full\n"
+                prediction_text += f"**{horizon}min ahead** ({time_str}): {pred_data['prediction']:.1f}%\n"
             else:
                 prediction_text += f"**{horizon}min ahead** ({time_str}): Gym closed\n"
     

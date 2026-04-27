@@ -10,6 +10,7 @@ import joblib
 import datetime
 import pytz
 
+
 # %%
 script_dir = Path(__file__).parent  # models/
 csv_path = script_dir.parent / "RSF_Dataset.csv" 
@@ -316,7 +317,16 @@ print("DF length:", len(df))
 print("Last percent_full values:", df['percent_full'].tail())
 print(f"DataFrame shape: {df.shape}")
 print(f"Last 5 rows of percent_full: {df['percent_full'].tail().values}")
-print(f"Current XGBoost15 version: {xgb_model_15.__version__}")
-print(f"Current XGBoost30 version: {xgb_model_30.__version__}")
-print(f"Current XGBoost45 version: {xgb_model_45.__version__}")
+
+import xgboost as xgb  
+
+print(f"Current XGBoost version: {xgb.__version__}")
+
+xgb_model_15 = joblib.load(script_dir / 'xgb_model_15min.pkl')
+print(f"Model type: {type(xgb_model_15)}")
+
+# Try a test prediction with dummy data
+test_input = [[0, 1, 0, 11, 700, 63, 62, 67, 1.3, -5.3, 68, 68.78, 6.36, 5.73]]
+test_pred = xgb_model_15.predict(test_input)
+print(f"Test prediction on realistic data: {test_pred[0]:.1f}%")
 # %%

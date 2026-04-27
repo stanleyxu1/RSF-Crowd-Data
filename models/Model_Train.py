@@ -18,6 +18,7 @@ df = pd.read_csv(csv_path)
 # %%
 ##Change timestamp to datetime type & establish open and closing hours
 df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["hour"] = df["timestamp"].dt.hour
 df["open_hour"] = 7
 df["close_hour"] = 23
 
@@ -57,14 +58,15 @@ df["is_open"] = (
 df = df[df["is_open"] == 1]
 #%%
 #Lag Features, percent full
-df["last_5_mins"] = df["percent_full"].shift(1)
-df['last_10_mins'] = df['percent_full'].shift(2)
-df['last_15_mins'] = df['percent_full'].shift(3)
+df["last_5_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(1)
+df["last_10_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(2)
+df["last_15_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(3)
 
 #%%
 #Rolling mean and std
 df["rolling_mean_15"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=3, min_periods=1)
     .mean()
 )
@@ -72,6 +74,7 @@ df["rolling_mean_15"] = (
     # Rolling std (volatility in last 15 mins)
 df["rolling_std_15"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=3, min_periods=2)
     .std()
 )
@@ -79,12 +82,14 @@ df["rolling_std_15"] = (
     # Optional: slightly longer context (30 mins)
 df["rolling_mean_30"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=6, min_periods=1)
     .mean()
 )
 
 df["rolling_std_30"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=6, min_periods=2)
     .std()
 )
@@ -92,7 +97,6 @@ df["rolling_std_30"] = (
 # %%
 #Turning Dates to Timeseries type
 df = df.sort_values("timestamp")
-df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 df["week_of_year"] = df["timestamp"].dt.isocalendar().week.astype(int)
 
@@ -116,7 +120,7 @@ df["weekday_hour"] = df["weekday"] * 24 + df["hour"]
 
 #%%
 #trend
-df['delta_5'] = df['last_percent_full'] - df['last_10_mins']
+df['delta_5'] = df['last_5_mins'] - df['last_10_mins']
 df['delta_10'] = df['last_10_mins'] - df['last_15_mins']
 
 # %%
@@ -132,7 +136,7 @@ features = [
     "weekday",
     "week_of_year",
     "minutes_until_close",
-    "last_percent_full",
+    "last_5_mins",
     "weekday_hour",
 ]
 
@@ -145,7 +149,7 @@ featuresXGB = [
     "minutes_until_close",
 
     # recency
-    "last_percent_full",
+    "last_5_mins",
     "last_10_mins",
     "last_15_mins",
 
@@ -165,8 +169,13 @@ X = df.iloc[1:][features]
 y = df[1:]["percent_full"]
 
 # %%
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+split_idx = int(len(X) * 0.8)
 
+X_train = X.iloc[:split_idx]
+X_test = X.iloc[split_idx:]
+
+y_train = y.iloc[:split_idx]
+y_test = y.iloc[split_idx:]
 
 # %%
 #Naive baseline, all predictions are simply overall average
@@ -269,7 +278,8 @@ for horizon, description in prediction_horizons.items():
     df_horizon = df.copy()
     
     # At time t, we want to predict percent_full at time t+horizon
-    df_horizon[f"target_{horizon}"] = df_horizon["percent_full"].shift(-horizon)
+    steps = horizon // 5  
+    df_horizon[f"target_{horizon}"] = df_horizon["percent_full"].shift(-steps)
     
     # Drop rows where target is NaN (last 'horizon' rows have no future value)
     # This automatically handles the issue where we can't predict beyond the dataset
@@ -277,15 +287,20 @@ for horizon, description in prediction_horizons.items():
     
     #Only use features that don't have NaN values
     df_horizon = df_horizon.dropna(subset=featuresXGB)
- 
+    df_horizon = df_horizon.dropna()
+
     # Prepare data
     X = df_horizon[featuresXGB]
     y = df_horizon[f"target_{horizon}"]
     
     # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, shuffle=True
-    )
+    split_idx = int(len(X) * 0.8)
+
+    X_train = X.iloc[:split_idx]
+    X_test = X.iloc[split_idx:]
+
+    y_train = y.iloc[:split_idx]
+    y_test = y.iloc[split_idx:]
 
     # Baseline (mean prediction)
     mean_value = y_train.mean()

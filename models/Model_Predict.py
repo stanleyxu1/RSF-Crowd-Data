@@ -18,6 +18,7 @@ df = pd.read_csv(csv_path)
 
 # %%
 df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["hour"] = df["timestamp"].dt.hour
 df["open_hour"] = 7
 df["close_hour"] = 23
 
@@ -43,8 +44,8 @@ df["date_str"] = df["timestamp"].dt.strftime("%Y-%m-%d")
 
 for date, (open_h, close_h) in spring_break.items():
     mask = df["date_str"] == date
-    df.loc[mask, "open_hour"] = None
-    df.loc[mask, "close_hour"] = None
+    df.loc[mask, "open_hour"] = open_h
+    df.loc[mask, "close_hour"] = close_h
 
 #Compute is_open
 df["is_open"] = (
@@ -54,32 +55,38 @@ df["is_open"] = (
 
 #%%
 #Lag Features, percent full
-df["last_5_mins"] = df["percent_full"].shift(1)
-df['last_10_mins'] = df['percent_full'].shift(2)
-df['last_15_mins'] = df['percent_full'].shift(3)
+df["last_5_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(1)
+df["last_10_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(2)
+df["last_15_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(3)
 
 # %%
 #Rolling mean and std
 df["rolling_mean_15"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=3, min_periods=1)
     .mean()
 )
- 
+
+    # Rolling std (volatility in last 15 mins)
 df["rolling_std_15"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=3, min_periods=2)
     .std()
 )
- 
+
+    # Optional: slightly longer context (30 mins)
 df["rolling_mean_30"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=6, min_periods=1)
     .mean()
 )
- 
+
 df["rolling_std_30"] = (
     df["percent_full"]
+    .shift(1)
     .rolling(window=6, min_periods=2)
     .std()
 )
@@ -87,7 +94,6 @@ df["rolling_std_30"] = (
 # %%
 #Turning Dates to Timeseries type
 df = df.sort_values("timestamp")
-df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 df["week_of_year"] = df["timestamp"].dt.isocalendar().week.astype(int)
 df["minute"] = df["timestamp"].dt.minute
@@ -206,10 +212,13 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     delta_10 = last_10_mins - last_15_mins
     
     # Rolling stats
-    rolling_mean_15 = df['percent_full'].iloc[-3:].mean() if len(df) > 0 else last_5_mins
-    rolling_mean_30 = df['percent_full'].iloc[-6:].mean() if len(df) > 0 else last_5_mins
-    rolling_std_15 = df['percent_full'].iloc[-3:].std() if len(df) > 1 else 0
-    rolling_std_30 = df['percent_full'].iloc[-6:].std() if len(df) > 1 else 0
+    recent15 = df['percent_full'].iloc[-4:-1]
+    rolling_mean_15 = recent15.mean()
+    rolling_std_15 = recent15.std()
+
+    recent30 = df['percent_full'].iloc[-7:-1]
+    rolling_mean_30 = recent30.mean()
+    rolling_std_30 = recent30.std()
     
     # Check if gym is open
     if future_hour < open_hour or future_hour >= close_hour:

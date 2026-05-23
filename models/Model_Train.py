@@ -9,6 +9,8 @@ import pandas as pd
 from pathlib import Path
 from xgboost import XGBRegressor
 import joblib
+import shap
+from sklearn.inspection import permutation_importance
 
 # %%
 script_dir = Path(__file__).parent  # models/
@@ -288,6 +290,7 @@ for horizon, description in prediction_horizons.items():
     print(importance_df.head(8).to_string(index=False))
     
     
+    
     # Visualization 2: Feature Importance
     plt.figure(figsize=(10, 7))
     importance_df.head(12).sort_values('importance').plot(
@@ -300,62 +303,25 @@ for horizon, description in prediction_horizons.items():
     plt.xlabel("Importance Score")
     plt.tight_layout()
     plt.show()
+
+    print("SHAP")
+    explainer = shap.TreeExplainer(xgb_model)
+    shap_values = explainer.shap_values(X_test)
+    shap.summary_plot(shap_values, X_test)
  
+
+    print('INSPECTION')
+    result = permutation_importance(xgb_model, X_test, y_test, n_repeats=10)
+    result
 # %%
 # SUMMARY COMPARISON
-print(f"\n\n{'='*80}")
 print("SUMMARY: Model Performance Across All Horizons")
 print(f"{'='*80}")
  
 summary_df = pd.DataFrame(results).T
-print(summary_df[["mae_train", "mae_test", "rmse_test", "improvement"]].round(4))
+print(summary_df[["mae_train", "mae_test", "rmse_test"]].round(4))
  
-# %%
-# Visualization 3: Model comparison across horizons
-fig, axes = plt.subplots(2, 2, figsize=(14, 10))
- 
-horizons = list(results.keys())
-horizons_str = [f"{h}m" for h in horizons]
- 
-# MAE comparison
-ax = axes[0, 0]
-baselines = [results[h]['baseline_mae'] for h in horizons]
-test_maes = [results[h]['mae_test'] for h in horizons]
-x = np.arange(len(horizons))
-width = 0.35
-ax.bar(x - width/2, baselines, width, label='Baseline (Mean)', alpha=0.8)
-ax.bar(x + width/2, test_maes, width, label='XGBoost', alpha=0.8)
-ax.set_xlabel("Prediction Horizon")
-ax.set_ylabel("MAE")
-ax.set_title("Mean Absolute Error Comparison")
-ax.set_xticks(x)
-ax.set_xticklabels(horizons_str)
-ax.legend()
-ax.grid(True, alpha=0.3)
- 
-# RMSE comparison
-ax = axes[0, 1]
-test_rmses = [results[h]['rmse_test'] for h in horizons]
-ax.plot(horizons_str, test_rmses, marker='o', linewidth=2, markersize=8, color='steelblue')
-ax.set_xlabel("Prediction Horizon")
-ax.set_ylabel("RMSE")
-ax.set_title("Root Mean Square Error")
-ax.grid(True, alpha=0.3)
- 
- 
-# Improvement over baseline
-ax = axes[1, 1]
-improvements = [results[h]['improvement'] for h in horizons]
-colors = ['green' if imp > 0 else 'red' for imp in improvements]
-ax.bar(horizons_str, improvements, color=colors, alpha=0.8)
-ax.set_xlabel("Prediction Horizon")
-ax.set_ylabel("Improvement (%)")
-ax.set_title("% Improvement Over Baseline")
-ax.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-ax.grid(True, alpha=0.3)
- 
-plt.tight_layout()
-plt.show()
+
  
 # %%
 # Save models
@@ -372,3 +338,5 @@ for horizon, model in models.items():
     pkl_path = models_dir / f"xgb_model_{horizon}min.pkl"
     joblib.dump(model, pkl_path)
     print(f"  Saved: {pkl_path}")
+
+# %%

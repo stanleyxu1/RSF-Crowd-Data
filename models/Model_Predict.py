@@ -314,3 +314,15 @@ if readme_path.exists():
 
 # Try a test prediction with dummy dat
 # %%
+bins = np.arange(df['temperature'].min(), df['temperature'].max() + 5, 5)
+
+df['temp_bin'] = pd.cut(df['temperature'], bins=bins)
+
+# average percent_full by temperature bin
+percent_full_by_temp = (
+    df.groupby('temp_bin')['percent_full']
+      .mean()
+)
+
+percent_full_by_temp
+# %%

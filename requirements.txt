@@ -1,8 +1,0 @@
-requests
-pytz
-pandas
-matplotlib
-numpy
-scikit-learn
-xgboost
-joblib

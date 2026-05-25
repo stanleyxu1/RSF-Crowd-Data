@@ -1,12 +1,12 @@
 <!-- GYM_PREDICTION -->
 **Gym Crowdedness Predictor**
 
-**15min ahead** (09:17): 28.4%
+**15min ahead** (09:22): 28.1%
 
-**30min ahead** (09:32): 31.6%
+**30min ahead** (09:37): 32.7%
 
-**45min ahead** (09:47): 37.9%
+**45min ahead** (09:52): 37.4%
 
-*Last updated: 2026-05-25 09:02:21 PDT*
+*Last updated: 2026-05-25 09:07:20 PDT*
 
 ![Gym Crowd Graph](crowd_graph.png)

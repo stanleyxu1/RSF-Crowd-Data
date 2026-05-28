@@ -23,6 +23,9 @@ jobs:
         run: |
           git fetch origin data-branch
           git checkout origin/data-branch -- RSF_Dataset.csv
+      
+      - name: Debug CSV tail    #test
+        run: tail -5 RSF_Dataset.csv
 
       - name: Set up Python
         uses: actions/setup-python@v5

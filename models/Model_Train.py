@@ -142,7 +142,7 @@ features = [
     "weekday_hour",
 ]
 
-# featuresXGB = [
+# featuresXGB = [ (ORIGINAL)
 # # time
 #     "hour_sin",
 #     "hour_cos",
@@ -237,18 +237,35 @@ for horizon, description in prediction_horizons.items():
     print(f"\nBaseline MAE:  {baseline_mae:.4f}")
     print(f"Baseline RMSE: {baseline_rmse:.4f}")
     
-    # Train XGBoost model
-    xgb_model = XGBRegressor(
-        n_estimators=200,
-        max_depth=6,
-        learning_rate=0.05,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42,
-        n_jobs=-1,
-        verbosity=0
-    )
+    # Train XGBoost model (ORIGINAL)
+    # xgb_model = XGBRegressor(
+    #     n_estimators=200,
+    #     max_depth=6,
+    #     learning_rate=0.05,
+    #     subsample=0.8,
+    #     colsample_bytree=0.8,
+    #     random_state=42,
+    #     n_jobs=-1,
+    #     verbosity=0
+    # )
     
+    xgb_model = XGBRegressor(
+    n_estimators=300,
+    learning_rate=0.04,
+    max_depth=5,
+
+    min_child_weight=2,
+
+    subsample=0.8,
+    colsample_bytree=0.8,
+
+    reg_alpha=0.1,
+    reg_lambda=1.2,
+
+    random_state=42,
+    n_jobs=-1,
+)
+
     xgb_model.fit(X_train, y_train)
     
     # Predictions

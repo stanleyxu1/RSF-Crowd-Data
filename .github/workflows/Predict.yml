@@ -1,6 +1,6 @@
 name: Predict Occupancy
 on:
-  
+  workflow_dispatch:
 
 concurrency:
   group: main-branch-writes

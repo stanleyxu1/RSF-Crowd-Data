@@ -46,8 +46,8 @@ df["date_str"] = df["timestamp"].dt.strftime("%Y-%m-%d")
 
 for date, (open_h, close_h) in spring_break.items():
     mask = df["date_str"] == date
-    df.loc[mask, "open_hour"] = None
-    df.loc[mask, "close_hour"] = None
+    df.loc[mask, "open_hour"] = open_h
+    df.loc[mask, "close_hour"] = close_h
 
 #Compute is_open
 df["is_open"] = (
@@ -142,28 +142,33 @@ features = [
     "weekday_hour",
 ]
 
+# featuresXGB = [
+# # time
+#     "hour_sin",
+#     "hour_cos",
+#     "weekday",
+#     "weekday_hour",
+#     "minutes_until_close",
+
+#     # recency
+#     "last_5_mins",
+#     "last_10_mins",
+#     #trend
+#     "delta_5",
+#     "delta_10",
+
+#     #Rolling data
+#     "rolling_mean_15",
+#     "rolling_mean_30",
+#     "rolling_std_15",
+#     "rolling_std_30",
+# ]
 featuresXGB = [
-# time
+    "last_5_mins",
+    "minutes_until_close",
+    "rolling_mean_15",
     "hour_sin",
     "hour_cos",
-    "weekday",
-    "weekday_hour",
-    "minutes_until_close",
-
-    # recency
-    "last_5_mins",
-    "last_10_mins",
-    "last_15_mins",
-
-    #trend
-    "delta_5",
-    "delta_10",
-
-    #Rolling data
-    "rolling_mean_15",
-    "rolling_mean_30",
-    "rolling_std_15",
-    "rolling_std_30",
 ]
 
 # %%
@@ -308,7 +313,7 @@ for horizon, description in prediction_horizons.items():
     explainer = shap.TreeExplainer(xgb_model)
     shap_values = explainer.shap_values(X_test)
     shap.summary_plot(shap_values, X_test)
- 
+    
 
     print('INSPECTION')
     result = permutation_importance(xgb_model, X_test, y_test, n_repeats=10)

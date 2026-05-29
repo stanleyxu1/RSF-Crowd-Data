@@ -357,7 +357,7 @@ print(summary_df[["mae_train", "mae_test", "rmse_test"]].round(4))
  
 # %%
 # Save models
-models_dir = Path("models")
+models_dir = Path("models").parent
 models_dir.mkdir(exist_ok=True)
  
 for horizon, model in models.items():

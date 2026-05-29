@@ -208,6 +208,14 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     open_hour = 8 if weekday in [5, 6] else 7
     close_hour = 18 if weekday == 5 else 23
     
+    # Apply summer hours
+    summer_start = pd.Timestamp("2026-05-16")
+    summer_end   = pd.Timestamp("2026-08-22")
+    future_date_ts = pd.Timestamp(future_datetime.date())
+    if summer_start <= future_date_ts <= summer_end:
+        if weekday in [0, 1, 2, 3, 4, 6]:  # Mon–Fri and Sunday
+            close_hour = 20
+
     # Check spring break hours
     future_date_str_check = future_datetime.strftime("%Y-%m-%d")
     if future_date_str_check in spring_break:

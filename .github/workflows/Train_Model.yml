@@ -46,17 +46,3 @@ jobs:
           git pull origin main --no-rebase -X theirs
           git push origin main
 
-      - name: Update data-branch with trained models
-        run: |
-          git fetch origin data-branch
-          git checkout -b sync-models origin/data-branch
-          
-          # Bring in the newly trained .pkl files from main
-          git checkout main -- models/*.pkl
-          
-          git add models/*.pkl
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          
-          git commit -m "Sync trained models: $(date)" || exit 0
-          git push origin sync-models:data-branch

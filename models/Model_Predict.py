@@ -248,11 +248,11 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     else:
         # Create feature dataframe
         X_future_XGB = pd.DataFrame([[
-            "last_5_mins",
-            "minutes_until_close",
-            "rolling_mean_15",
-            "hour_sin",
-            "hour_cos"
+            last_5_mins,
+            minutes_until_close,
+            rolling_mean_15,
+            hour_sin,
+            hour_cos
         ]], columns=featuresXGB)
         
         # Predict and clip to 0-100
@@ -320,3 +320,5 @@ if readme_path.exists():
     
     with open(readme_path, "w") as f:
         f.writelines(lines)
+
+# %%

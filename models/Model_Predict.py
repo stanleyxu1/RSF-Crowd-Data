@@ -147,28 +147,36 @@ features = [
     "weekday_hour",
 ]
  
+# featuresXGB = [
+#     # time
+#     "hour_sin",
+#     "hour_cos",
+#     "weekday",
+#     "weekday_hour",              # ← week_of_year removed
+#     "minutes_until_close",
+ 
+#     # recency
+#     "last_5_mins",
+#     "last_10_mins",
+#     "last_15_mins",
+ 
+#     # trend
+#     "delta_5",
+#     "delta_10",
+ 
+#     # Rolling data
+#     "rolling_mean_15",
+#     "rolling_mean_30",
+#     "rolling_std_15",
+#     "rolling_std_30",
+# ]
+
 featuresXGB = [
-    # time
+    "last_5_mins",
+    "minutes_until_close",
+    "rolling_mean_15",
     "hour_sin",
     "hour_cos",
-    "weekday",
-    "weekday_hour",              # ← week_of_year removed
-    "minutes_until_close",
- 
-    # recency
-    "last_5_mins",
-    "last_10_mins",
-    "last_15_mins",
- 
-    # trend
-    "delta_5",
-    "delta_10",
- 
-    # Rolling data
-    "rolling_mean_15",
-    "rolling_mean_30",
-    "rolling_std_15",
-    "rolling_std_30",
 ]
  
 #%%
@@ -240,20 +248,11 @@ for horizon_mins, xgb_model in models_by_horizon.items():
     else:
         # Create feature dataframe
         X_future_XGB = pd.DataFrame([[
-            hour_sin,
-            hour_cos,
-            weekday,
-            weekday_hour,
-            minutes_until_close,
-            last_5_mins,
-            last_10_mins,
-            last_15_mins,
-            delta_5,
-            delta_10,
-            rolling_mean_15,
-            rolling_mean_30,
-            rolling_std_15,
-            rolling_std_30
+            "last_5_mins",
+            "minutes_until_close",
+            "rolling_mean_15",
+            "hour_sin",
+            "hour_cos"
         ]], columns=featuresXGB)
         
         # Predict and clip to 0-100
@@ -321,18 +320,3 @@ if readme_path.exists():
     
     with open(readme_path, "w") as f:
         f.writelines(lines)
-
-# Try a test prediction with dummy dat
-# %%
-bins = np.arange(df['temperature'].min(), df['temperature'].max() + 5, 5)
-
-df['temp_bin'] = pd.cut(df['temperature'], bins=bins)
-
-# average percent_full by temperature bin
-percent_full_by_temp = (
-    df.groupby('temp_bin')['percent_full']
-      .mean()
-)
-
-percent_full_by_temp
-# %%

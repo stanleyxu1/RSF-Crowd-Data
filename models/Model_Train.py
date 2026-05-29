@@ -26,19 +26,23 @@ df["hour"] = df["timestamp"].dt.hour
 df["open_hour"] = 7
 df["close_hour"] = 23
 
+# Weekend open at 8am (year-round, DEFAULT)
+df.loc[df["weekday"].isin([5, 6]), "open_hour"] = 8
+
+# Saturday closes at 6pm (year-round, DEFAULT)
+df.loc[df["weekday"] == 5, "close_hour"] = 18
+
 # Summer 2026: 5/16 – 8/22
 summer_start = pd.Timestamp("2026-05-16")
 summer_end   = pd.Timestamp("2026-08-22")
 is_summer = (df["timestamp"] >= summer_start) & (df["timestamp"] <= summer_end)
 
 # Summer Mon–Fri and Sunday close at 8pm
-df.loc[is_summer & ~df["weekday"].isin([5]), "close_hour"] = 20
+df['is_summer'] = is_summer
 
-# Weekend open at 8am (year-round)
-df.loc[df["weekday"].isin([5, 6]), "open_hour"] = 8
-
-# Saturday closes at 6pm (year-round)
-df.loc[df["weekday"] == 5, "close_hour"] = 18
+#Change summer open and close hours
+df.loc[df["weekday"] == 6, "close_hour"] = 20
+df.loc[df["weekday"].isin([0, 1, 2, 3, 4]), "close_hour"] = 20
 
 #SPRING BREAK HOURS
 spring_break = {
@@ -68,6 +72,7 @@ df["is_open"] = (
 #%%
 #Only consider OPEN times
 df = df[df["is_open"] == 1]
+df.tail()
 #%%
 #Lag Features, percent full
 df["last_5_mins"] = df.groupby(df["timestamp"].dt.date)["percent_full"].shift(1)

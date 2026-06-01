@@ -356,7 +356,7 @@ print("SUMMARY: Model Performance Across All Horizons")
 print(f"{'='*80}")
  
 summary_df = pd.DataFrame(results).T
-print(summary_df[["mae_train", "mae_test", "rmse_test"]].round(4))
+print(summary_df[["mae_train", "rmse_train", "mae_test", "rmse_test"]].round(4))
  
 
  

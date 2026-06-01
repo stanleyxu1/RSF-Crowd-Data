@@ -10,7 +10,6 @@ from pathlib import Path
 from xgboost import XGBRegressor
 import joblib
 import shap
-from sklearn.inspection import permutation_importance
 
 # %%
 script_dir = Path(__file__).parent  # models/
@@ -294,13 +293,6 @@ for horizon, description in prediction_horizons.items():
     mae_test = mean_absolute_error(y_test, test_preds)
     rmse_test = np.sqrt(mean_squared_error(y_test, test_preds))
     
-    print(f"\nTraining Results:")
-    print(f"  MAE:  {mae_train:.4f}")
-    print(f"  RMSE: {rmse_train:.4f}")
-    
-    print(f"\nTest Results:")
-    print(f"  MAE:  {mae_test:.4f}")
-    print(f"  RMSE: {rmse_test:.4f}")
     
     # Store results
     results[horizon] = {
@@ -327,29 +319,13 @@ for horizon, description in prediction_horizons.items():
     print(importance_df.head(8).to_string(index=False))
     
     
-    
-    # Visualization 2: Feature Importance
-    plt.figure(figsize=(10, 7))
-    importance_df.head(12).sort_values('importance').plot(
-        x="feature",
-        y="importance",
-        kind="barh",
-        legend=False
-    )
-    plt.title(f"Feature Importance ({horizon}min ahead)")
-    plt.xlabel("Importance Score")
-    plt.tight_layout()
-    plt.show()
+
 
     print("SHAP")
     explainer = shap.TreeExplainer(xgb_model)
     shap_values = explainer.shap_values(X_test)
     shap.summary_plot(shap_values, X_test)
     
-
-    print('INSPECTION')
-    result = permutation_importance(xgb_model, X_test, y_test, n_repeats=10)
-    result
 # %%
 # SUMMARY COMPARISON
 print("SUMMARY: Model Performance Across All Horizons")

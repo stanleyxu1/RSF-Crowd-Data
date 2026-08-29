@@ -21,7 +21,7 @@ df["minute"] = df["time_bin"].dt.minute
 # Summer 2026: 5/16 – 8/22
 summer_start = pd.Timestamp("2026-05-16")
 summer_end   = pd.Timestamp("2026-08-22")
-is_summer = (df["timestamp"] >= summer_start) & (df["timestamp"] <= summer_end)
+df['is_summer']  = (df["timestamp"] >= summer_start) & (df["timestamp"] <= summer_end)
 
 df = df[df['is_summer'] == False]
 

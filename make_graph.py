@@ -18,6 +18,13 @@ df["time_bin"] = df["timestamp"].dt.round("20min")
 df["hour"] = df["time_bin"].dt.hour
 df["minute"] = df["time_bin"].dt.minute
 
+# Summer 2026: 5/16 – 8/22
+summer_start = pd.Timestamp("2026-05-16")
+summer_end   = pd.Timestamp("2026-08-22")
+is_summer = (df["timestamp"] >= summer_start) & (df["timestamp"] <= summer_end)
+
+df = df[df['is_summer'] == False]
+
 #%%
 df["open_hour"] = 7
 df["close_hour"] = 23
